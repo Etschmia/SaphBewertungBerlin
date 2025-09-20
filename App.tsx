@@ -4,7 +4,11 @@ import { initialSubjects } from './data/initialData';
 import type { Student, Subject, AppState, Rating, Category, Competency } from './types';
 import StudentList from './components/StudentList';
 import AssessmentForm from './components/AssessmentForm';
+import ExtrasDropdown from './components/ExtrasDropdown';
+import AboutModal from './components/AboutModal';
+import UpdateInfoModal from './components/UpdateInfoModal';
 import { generatePdf } from './services/pdfGenerator';
+import { useUpdateService, installPWA } from './services/updateService';
 import { PlusIcon, ArrowDownTrayIcon, ArrowUpTrayIcon, DocumentArrowDownIcon } from './components/Icons';
 
 const App: React.FC = () => {
@@ -12,6 +16,10 @@ const App: React.FC = () => {
   const [subjects, setSubjects] = useState<Subject[]>(initialSubjects);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
+  const [updateInfoStatus, setUpdateInfoStatus] = useState<'success' | 'fail' | 'unchanged'>('unchanged');
+  const [updateBuildInfo, setUpdateBuildInfo] = useState<any>(null);
+  const [isUpdateInfoModalOpen, setIsUpdateInfoModalOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -178,6 +186,21 @@ const App: React.FC = () => {
     }
   };
 
+  const { handleUpdate } = useUpdateService({
+    setUpdateInfoStatus,
+    setUpdateBuildInfo,
+    setIsUpdateInfoModalOpen,
+  });
+
+  const handleInstallApp = async () => {
+    const result = await installPWA();
+    alert(result);
+  };
+
+  const handleAbout = () => {
+    setShowAboutModal(true);
+  };
+
   const selectedStudent = useMemo(() => students.find(s => s.id === selectedStudentId), [students, selectedStudentId]);
 
   return (
@@ -224,6 +247,11 @@ const App: React.FC = () => {
               className="flex items-center gap-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed" title="Bewertung als PDF exportieren">
                 <DocumentArrowDownIcon /> PDF Export
             </button>
+            <ExtrasDropdown 
+              onUpdate={handleUpdate}
+              onInstallApp={handleInstallApp}
+              onAbout={handleAbout}
+            />
           </div>
         </header>
         <div className="flex-grow p-6 overflow-y-auto bg-slate-50">
@@ -246,6 +274,19 @@ const App: React.FC = () => {
           )}
         </div>
       </main>
+      
+      <AboutModal 
+        isOpen={showAboutModal}
+        onClose={() => setShowAboutModal(false)}
+        version="0.0.1"
+      />
+      
+      <UpdateInfoModal
+        isOpen={isUpdateInfoModalOpen}
+        onClose={() => setIsUpdateInfoModalOpen(false)}
+        status={updateInfoStatus}
+        buildInfo={updateBuildInfo}
+      />
     </div>
   );
 };

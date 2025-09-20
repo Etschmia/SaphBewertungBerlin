@@ -84,3 +84,46 @@ export const EditIcon: React.FC<{className?: string}> = ({className}) => (
     <path d="M16 5l3 3" />
   </svg>
 );
+
+export const DotsVerticalIcon: React.FC<{className?: string}> = ({className}) => (
+  <svg {...iconProps} className={className || iconProps.className}>
+    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+    <circle cx="12" cy="12" r="1" />
+    <circle cx="12" cy="19" r="1" />
+    <circle cx="12" cy="5" r="1" />
+  </svg>
+);
+
+export const RefreshIcon: React.FC<{className?: string}> = ({className}) => (
+  <svg {...iconProps} className={className || iconProps.className}>
+    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+    <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+  </svg>
+);
+
+export const DownloadIcon: React.FC<{className?: string}> = ({className}) => (
+  <svg {...iconProps} className={className || iconProps.className}>
+    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+    <path d="M7 11l5 5l5 -5" />
+    <path d="M12 4l0 12" />
+  </svg>
+);
+
+export const InfoIcon: React.FC<{className?: string}> = ({className}) => (
+  <svg {...iconProps} className={className || iconProps.className}>
+    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+    <circle cx="12" cy="12" r="9" />
+    <line x1="12" y1="8" x2="12.01" y2="8" />
+    <polyline points="11,12 12,12 12,16 13,16" />
+  </svg>
+);
+
+export const XIcon: React.FC<{className?: string}> = ({className}) => (
+  <svg {...iconProps} className={className || iconProps.className}>
+    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
