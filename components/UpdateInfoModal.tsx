@@ -21,14 +21,14 @@ const UpdateInfoModal: React.FC<UpdateInfoModalProps> = ({
       case 'success':
         return {
           title: 'Update erfolgreich',
-          message: 'Auf neue Version installiert',
+          message: 'Neue Version installiert',
           icon: <RefreshIcon className="w-8 h-8 text-green-600" />,
           bgColor: 'bg-green-50',
           borderColor: 'border-green-200'
         };
       case 'unchanged':
         return {
-          title: 'Keine Updates verfügbar',
+          title: 'Bereits aktuell',
           message: 'Sie verwenden bereits die neueste Version',
           icon: <InfoIcon className="w-8 h-8 text-blue-600" />,
           bgColor: 'bg-blue-50',
@@ -38,7 +38,7 @@ const UpdateInfoModal: React.FC<UpdateInfoModalProps> = ({
       default:
         return {
           title: 'Update fehlgeschlagen',
-          message: 'Server nicht erreichbar',
+          message: 'Verbindung zum Server nicht möglich',
           icon: <InfoIcon className="w-8 h-8 text-red-600" />,
           bgColor: 'bg-red-50',
           borderColor: 'border-red-200'
