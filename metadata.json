@@ -1,0 +1,5 @@
+{
+  "name": "Zeugnis Assistent",
+  "description": "Eine App zur Bewertung von Schülern auf der Grundlage von anpassbaren Kompetenzkatalogen. Bewertungen können lokal gespeichert, geladen und als PDF exportiert werden.",
+  "requestFramePermissions": []
+}
