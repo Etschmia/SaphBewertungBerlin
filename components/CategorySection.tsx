@@ -35,7 +35,7 @@ const EditableText: React.FC<{
                 onChange={(e) => setText(e.target.value)}
                 onBlur={handleSave}
                 onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-                className={`border-b-2 border-blue-500 focus:outline-none bg-inherit ${className}`}
+                className={`border-b-2 border-blue-500 dark:border-blue-400 focus:outline-none bg-inherit text-inherit ${className}`}
                 autoFocus
             />
         );
@@ -56,28 +56,28 @@ const CategorySection: React.FC<CategorySectionProps> = ({
     onAddCompetency
 }) => {
   return (
-    <div className="p-4 rounded-md bg-slate-50 border border-slate-200/80">
+    <div className="p-4 rounded-md bg-slate-50 dark:bg-gray-700 border border-slate-200/80 dark:border-gray-600">
       <div className="flex items-center gap-2 mb-4">
-        <h4 className="text-lg font-semibold text-slate-600">
+        <h4 className="text-lg font-semibold text-slate-600 dark:text-gray-200">
            <EditableText 
                 initialText={category.name} 
                 onSave={(newName) => onCategoryNameChange(subjectId, category.id, newName)}
             />
         </h4>
-         <button onClick={() => onCategoryNameChange(subjectId, category.id, prompt('Neuer Kategoriename:', category.name) || category.name)} className="text-slate-400 hover:text-blue-500">
+         <button onClick={() => onCategoryNameChange(subjectId, category.id, prompt('Neuer Kategoriename:', category.name) || category.name)} className="text-slate-400 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400">
             <EditIcon />
         </button>
       </div>
       <div className="space-y-3">
         {category.competencies.map(competency => (
-          <div key={competency.id} className="grid grid-cols-[2fr_1fr] items-center gap-4 py-2 border-b border-slate-200 last:border-b-0">
+          <div key={competency.id} className="grid grid-cols-[2fr_1fr] items-center gap-4 py-2 border-b border-slate-200 dark:border-gray-600 last:border-b-0">
             <div className="flex items-center gap-2">
                 <EditableText 
                     initialText={competency.text} 
                     onSave={(newText) => onCompetencyTextChange(subjectId, category.id, competency.id, newText)}
-                    className="text-slate-700"
+                    className="text-slate-700 dark:text-gray-200"
                 />
-                 <button onClick={() => onCompetencyTextChange(subjectId, category.id, competency.id, prompt('Kompetenztext bearbeiten:', competency.text) || competency.text)} className="text-slate-400 hover:text-blue-500">
+                 <button onClick={() => onCompetencyTextChange(subjectId, category.id, competency.id, prompt('Kompetenztext bearbeiten:', competency.text) || competency.text)} className="text-slate-400 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400">
                     <EditIcon />
                 </button>
             </div>
@@ -90,7 +90,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
         <div className="pt-2">
             <button 
                 onClick={() => onAddCompetency(subjectId, category.id)}
-                className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-semibold"
+                className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold"
             >
                 <PlusCircleIcon />
                 Kompetenz hinzufügen

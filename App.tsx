@@ -5,6 +5,7 @@ import type { Student, Subject, AppState, Rating, Category, Competency } from '.
 import StudentList from './components/StudentList';
 import AssessmentForm from './components/AssessmentForm';
 import ExtrasDropdown from './components/ExtrasDropdown';
+import ThemeSelector from './components/ThemeSelector';
 import AboutModal from './components/AboutModal';
 import UpdateInfoModal from './components/UpdateInfoModal';
 import { generatePdf } from './services/pdfGenerator';
@@ -20,6 +21,7 @@ const App: React.FC = () => {
   const [updateInfoStatus, setUpdateInfoStatus] = useState<'success' | 'fail' | 'unchanged'>('unchanged');
   const [updateBuildInfo, setUpdateBuildInfo] = useState<any>(null);
   const [isUpdateInfoModalOpen, setIsUpdateInfoModalOpen] = useState(false);
+
 
   useEffect(() => {
     try {
@@ -48,6 +50,8 @@ const App: React.FC = () => {
       }
     }
   }, [students, subjects, isDataLoaded]);
+
+
 
   const addStudent = () => {
     const name = prompt("Bitte geben Sie den Vornamen des Schülers ein (z.B. Max M.):");
@@ -204,10 +208,10 @@ const App: React.FC = () => {
   const selectedStudent = useMemo(() => students.find(s => s.id === selectedStudentId), [students, selectedStudentId]);
 
   return (
-    <div className="flex h-screen font-sans text-slate-800">
-      <aside className="w-1/4 max-w-sm bg-white border-r border-slate-200 flex flex-col">
-        <div className="p-4 border-b border-slate-200">
-          <h1 className="text-2xl font-bold text-slate-700">Zeugnis Assistent</h1>
+    <div className="flex h-screen font-sans text-slate-800 dark:text-gray-100">
+      <aside className="w-1/4 max-w-sm bg-white dark:bg-gray-800 border-r border-slate-200 dark:border-gray-700 flex flex-col">
+        <div className="p-4 border-b border-slate-200 dark:border-gray-700">
+          <h1 className="text-2xl font-bold text-slate-700 dark:text-gray-100">Zeugnis Assistent</h1>
         </div>
         <div className="p-4 flex-grow overflow-y-auto">
           <StudentList
@@ -217,10 +221,10 @@ const App: React.FC = () => {
             onDeleteStudent={deleteStudent}
           />
         </div>
-        <div className="p-4 border-t border-slate-200">
+        <div className="p-4 border-t border-slate-200 dark:border-gray-700">
           <button
             onClick={addStudent}
-            className="w-full flex items-center justify-center gap-2 bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-blue-500 dark:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
           >
             <PlusIcon />
             Schüler hinzufügen
@@ -229,24 +233,25 @@ const App: React.FC = () => {
       </aside>
 
       <main className="flex-1 flex flex-col">
-        <header className="bg-white border-b border-slate-200 p-4 flex justify-between items-center">
-          <h2 className="text-xl font-semibold">
-            Bewertung für: <span className="text-blue-600">{selectedStudent?.name || "Kein Schüler ausgewählt"}</span>
+        <header className="bg-white dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700 p-4 flex justify-between items-center">
+          <h2 className="text-xl font-semibold dark:text-gray-100">
+            Bewertung für: <span className="text-blue-600 dark:text-blue-400">{selectedStudent?.name || "Kein Schüler ausgewählt"}</span>
           </h2>
           <div className="flex gap-2">
-            <button onClick={handleExportJson} className="flex items-center gap-2 bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors" title="Daten als JSON speichern">
+            <button onClick={handleExportJson} className="flex items-center gap-2 bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600" title="Daten als JSON speichern">
                 <ArrowDownTrayIcon /> Speichern
             </button>
-            <label className="flex items-center gap-2 bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors cursor-pointer" title="Daten aus JSON laden">
+            <label className="flex items-center gap-2 bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors cursor-pointer dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600" title="Daten aus JSON laden">
                 <ArrowUpTrayIcon /> Laden
                 <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
             </label>
             <button 
               onClick={handleExportPdf} 
               disabled={!selectedStudent}
-              className="flex items-center gap-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed" title="Bewertung als PDF exportieren">
+              className="flex items-center gap-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed dark:disabled:bg-gray-600" title="Bewertung als PDF exportieren">
                 <DocumentArrowDownIcon /> PDF Export
             </button>
+            <ThemeSelector />
             <ExtrasDropdown 
               onUpdate={handleUpdate}
               onInstallApp={handleInstallApp}
@@ -254,7 +259,7 @@ const App: React.FC = () => {
             />
           </div>
         </header>
-        <div className="flex-grow p-6 overflow-y-auto bg-slate-50">
+        <div className="flex-grow p-6 overflow-y-auto bg-slate-50 dark:bg-gray-900">
           {selectedStudent ? (
             <AssessmentForm
               student={selectedStudent}
@@ -266,7 +271,7 @@ const App: React.FC = () => {
             />
           ) : (
             <div className="flex items-center justify-center h-full">
-                <div className="text-center text-slate-500">
+                <div className="text-center text-slate-500 dark:text-gray-400">
                     <h3 className="text-2xl font-semibold">Willkommen!</h3>
                     <p>Bitte fügen Sie einen Schüler hinzu oder wählen Sie einen aus der Liste aus, um mit der Bewertung zu beginnen.</p>
                 </div>

@@ -26,16 +26,16 @@ const SubjectAccordion: React.FC<SubjectAccordionProps> = ({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="bg-white rounded-lg shadow-md border border-slate-200">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-slate-200 dark:border-gray-600">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex justify-between items-center p-4 text-left"
       >
-        <h3 className="text-xl font-bold text-slate-700">{subject.name}</h3>
-        <ChevronDownIcon className={`w-6 h-6 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <h3 className="text-xl font-bold text-slate-700 dark:text-gray-100">{subject.name}</h3>
+        <ChevronDownIcon className={`w-6 h-6 text-slate-600 dark:text-gray-300 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       {isOpen && (
-        <div className="p-4 border-t border-slate-200 space-y-6">
+        <div className="p-4 border-t border-slate-200 dark:border-gray-600 space-y-6">
           {subject.categories.map(category => (
             <CategorySection
               key={category.id}

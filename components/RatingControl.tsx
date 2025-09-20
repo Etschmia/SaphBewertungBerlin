@@ -16,29 +16,38 @@ const ratingOptions = [
 ];
 
 const RatingIcon: React.FC<{ rating: Rating, isSelected: boolean }> = ({ rating, isSelected }) => {
-  const baseClasses = "w-6 h-6 rounded-full border-2 border-slate-400 transition-all cursor-pointer";
-  const selectedClasses = "ring-2 ring-blue-500 ring-offset-1";
+  const baseClasses = "w-6 h-6 rounded-full border-2 border-slate-400 dark:border-gray-500 transition-all cursor-pointer";
+  const selectedClasses = "ring-2 ring-blue-500 dark:ring-blue-400 ring-offset-1 dark:ring-offset-gray-800";
 
   const getStyle = () => {
     switch (rating) {
-      case Rating.Low: return `bg-white`;
-      case Rating.Partial: return `bg-gradient-to-r from-slate-600 from-50% to-white to-50%`;
-      case Rating.Proficient: return `bg-white`;
-      case Rating.Excellent: return `bg-slate-600 relative after:content-[''] after:absolute after:-top-1 after:-left-1 after:w-7 after:h-7 after:border-2 after:border-slate-600 after:rounded-full`;
-      case Rating.NotTaught: return `bg-slate-200 border-dashed`;
-      default: return `bg-white`;
+      case Rating.Low: return `bg-white dark:bg-gray-700`;
+      case Rating.Partial: return `bg-gradient-to-r from-slate-600 dark:from-gray-400 from-50% to-white dark:to-gray-700 to-50%`;
+      case Rating.Proficient: return `bg-white dark:bg-gray-700`;
+      case Rating.Excellent: return `bg-slate-600 dark:bg-gray-400 relative after:content-[''] after:absolute after:-top-1 after:-left-1 after:w-7 after:h-7 after:border-2 after:border-slate-600 dark:after:border-gray-400 after:rounded-full`;
+      case Rating.NotTaught: return `bg-slate-200 dark:bg-gray-600 border-dashed`;
+      default: return `bg-white dark:bg-gray-700`;
     }
   }
 
   const getCustomStyle = () => {
+    const isDark = document.documentElement.classList.contains('dark');
+    const darkColor = '#9ca3af'; // gray-400
+    const lightColor = '#475569'; // slate-600
+    const darkBg = '#374151'; // gray-700
+    const lightBg = 'white';
+    
+    const fillColor = isDark ? darkColor : lightColor;
+    const bgColor = isDark ? darkBg : lightBg;
+    
     switch (rating) {
       case Rating.Low:
         return {
-          background: `conic-gradient(from 0deg, #475569 0deg 90deg, white 90deg 360deg)`
+          background: `conic-gradient(from 0deg, ${fillColor} 0deg 90deg, ${bgColor} 90deg 360deg)`
         };
       case Rating.Proficient:
         return {
-          background: `conic-gradient(from 0deg, #475569 0deg 270deg, white 270deg 360deg)`
+          background: `conic-gradient(from 0deg, ${fillColor} 0deg 270deg, ${bgColor} 270deg 360deg)`
         };
       default:
         return {};
