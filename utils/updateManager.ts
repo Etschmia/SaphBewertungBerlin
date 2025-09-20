@@ -14,21 +14,17 @@ export const checkAndInstallUpdate = async (): Promise<UpdateResult> => {
   try {
     // Prüfe ob Service Worker verfügbar ist
     if (!('serviceWorker' in navigator)) {
-      // Verzögerter Hard-Refresh nach Modal-Anzeige
-      setTimeout(forceReload, 2000);
       return { 
         status: 'unchanged',
-        buildInfo: { message: 'Seite wird in 2 Sekunden neu geladen...' }
+        buildInfo: { message: 'Service Worker nicht verfügbar.' }
       };
     }
 
     const registration = await navigator.serviceWorker.getRegistration();
     if (!registration) {
-      // Verzögerter Hard-Refresh nach Modal-Anzeige
-      setTimeout(forceReload, 2000);
       return { 
         status: 'unchanged',
-        buildInfo: { message: 'Seite wird in 2 Sekunden neu geladen...' }
+        buildInfo: { message: 'Service Worker nicht registriert.' }
       };
     }
 
@@ -63,23 +59,19 @@ export const checkAndInstallUpdate = async (): Promise<UpdateResult> => {
         buildInfo: { message: 'Update installiert, Seite wird in 2 Sekunden neu geladen...' }
       };
     }
-
     // Kein neuer Service Worker, aber trotzdem Hard-Refresh durchführen
     // um sicherzustellen, dass alle Änderungen geladen werden
     setTimeout(forceReload, 2000);
-    
     return { 
       status: 'unchanged',
-      buildInfo: { message: 'Seite wird in 2 Sekunden aktualisiert...' }
+      buildInfo: { message: 'keine neue Version, Seite wird dennoch in 2 Sekunden neu geladen...' }
     };
 
   } catch (error) {
     console.error('Update check failed:', error);
-    // Auch bei Fehlern: Verzögerter Hard-Refresh
-    setTimeout(forceReload, 2000);
     return { 
       status: 'fail',
-      buildInfo: { message: 'Seite wird in 2 Sekunden neu geladen...' }
+      buildInfo: { message: 'Server nicht erreichbar.' }
     };
   }
 };
