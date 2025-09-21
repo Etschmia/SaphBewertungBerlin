@@ -1,5 +1,5 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { Rating } from '../types';
 
 interface RatingControlProps {
@@ -85,8 +85,22 @@ const RatingControl: React.FC<RatingControlProps> = ({ logs, onClickOption, onDe
     }
   };
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (openFor === null) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      if (!containerRef.current.contains(e.target as Node)) {
+        setOpenFor(null);
+      }
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [openFor]);
+
   return (
-    <div className="flex items-center justify-end space-x-4">
+    <div ref={containerRef} className="flex items-center justify-end space-x-4">
       {ratingOptions.map(option => {
         const count = counts[option.value] || 0;
         const times = logs?.[option.value] || [];
@@ -110,7 +124,15 @@ const RatingControl: React.FC<RatingControlProps> = ({ logs, onClickOption, onDe
                     <thead>
                       <tr className="text-left text-slate-500 dark:text-gray-400">
                         <th>Zeit</th>
-                        <th></th>
+                        <th className="text-right">
+                          <button
+                            aria-label="Ansicht schließen"
+                            className="text-slate-500 hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-200 text-xs"
+                            onClick={() => setOpenFor(null)}
+                          >
+                            ×
+                          </button>
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
