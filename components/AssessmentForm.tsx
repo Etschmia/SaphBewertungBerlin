@@ -6,7 +6,8 @@ import SubjectAccordion from './SubjectAccordion';
 interface AssessmentFormProps {
   student: Student;
   subjects: Subject[];
-  onAssessmentChange: (competencyId: string, rating: Rating) => void;
+  onAssessmentClick: (competencyId: string, rating: Rating) => void;
+  onDeleteClickTime: (competencyId: string, rating: Rating, index: number) => void;
   onCompetencyTextChange: (subjectId: string, categoryId: string, competencyId: string, newText: string) => void;
   onCategoryNameChange: (subjectId: string, categoryId: string, newName: string) => void;
   onAddCompetency: (subjectId: string, categoryId: string) => void;
@@ -15,7 +16,8 @@ interface AssessmentFormProps {
 const AssessmentForm: React.FC<AssessmentFormProps> = ({ 
     student, 
     subjects, 
-    onAssessmentChange,
+    onAssessmentClick,
+    onDeleteClickTime,
     onCompetencyTextChange,
     onCategoryNameChange,
     onAddCompetency
@@ -27,7 +29,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
           key={subject.id}
           subject={subject}
           student={student}
-          onAssessmentChange={onAssessmentChange}
+          onAssessmentClick={onAssessmentClick}
+          onDeleteClickTime={onDeleteClickTime}
           onCompetencyTextChange={onCompetencyTextChange}
           onCategoryNameChange={onCategoryNameChange}
           onAddCompetency={onAddCompetency}

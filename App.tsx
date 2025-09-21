@@ -23,12 +23,40 @@ const App: React.FC = () => {
   const [isUpdateInfoModalOpen, setIsUpdateInfoModalOpen] = useState(false);
 
 
+  const migrateStudentAssessments = (student: Student): Student => {
+    // Migration: Falls assessments noch im alten Format (Record<string, number>) vorliegen,
+    // in neues Format (Record<string, Record<Rating, string[]>>) überführen.
+    const migratedAssessments: Record<string, Record<Rating, string[]>> = {} as any;
+    const entries = Object.entries(student.assessments as any);
+    if (entries.length === 0) return student;
+    const nowIso = new Date().toISOString();
+    for (const [competencyId, value] of entries) {
+      if (typeof value === 'number') {
+        // altes Format: eine einzelne Bewertung
+        migratedAssessments[competencyId] = {
+          [0]: [],
+          [1]: [],
+          [2]: [],
+          [3]: [],
+          [4]: [],
+        } as Record<Rating, string[]>;
+        migratedAssessments[competencyId][value as Rating] = [nowIso];
+      } else if (typeof value === 'object' && value !== null) {
+        // eventuell bereits im neuen Format
+        migratedAssessments[competencyId] = value as Record<Rating, string[]>;
+      }
+    }
+    return { ...student, assessments: migratedAssessments } as Student;
+  };
+
   useEffect(() => {
     try {
       const savedState = localStorage.getItem('zeugnis-assistent-state');
       if (savedState) {
         const parsedState: AppState = JSON.parse(savedState);
-        setStudents(parsedState.students);
+        // Migration alter Daten
+        const migratedStudents = parsedState.students.map(migrateStudentAssessments);
+        setStudents(migratedStudents);
         setSubjects(parsedState.subjects);
         if (parsedState.students.length > 0) {
           setSelectedStudentId(parsedState.students[0].id);
@@ -77,7 +105,7 @@ const App: React.FC = () => {
     }
   };
 
-  const handleAssessmentChange = useCallback((competencyId: string, rating: Rating) => {
+  const handleAssessmentClick = useCallback((competencyId: string, rating: Rating) => {
     if (!selectedStudentId) return;
 
     setStudents(prevStudents =>
@@ -87,11 +115,45 @@ const App: React.FC = () => {
               ...student,
               assessments: {
                 ...student.assessments,
-                [competencyId]: rating,
+                [competencyId]: (() => {
+                  const existing = (student.assessments as any)[competencyId] as Record<Rating, string[]> | undefined;
+                  const nowIso = new Date().toISOString();
+                  const base: Record<Rating, string[]> = existing || ({
+                    [0]: [], [1]: [], [2]: [], [3]: [], [4]: []
+                  } as Record<Rating, string[]>);
+                  return {
+                    ...base,
+                    [rating]: [...(base[rating] || []), nowIso]
+                  } as Record<Rating, string[]>;
+                })(),
               },
             }
           : student
       )
+    );
+  }, [selectedStudentId]);
+
+  const handleDeleteClickTime = useCallback((competencyId: string, rating: Rating, index: number) => {
+    if (!selectedStudentId) return;
+    setStudents(prevStudents =>
+      prevStudents.map(student => {
+        if (student.id !== selectedStudentId) return student;
+        const logs = (student.assessments as any)[competencyId] as Record<Rating, string[]> | undefined;
+        if (!logs) return student;
+        const targetArray = [...(logs[rating] || [])];
+        if (index < 0 || index >= targetArray.length) return student;
+        targetArray.splice(index, 1);
+        return {
+          ...student,
+          assessments: {
+            ...student.assessments,
+            [competencyId]: {
+              ...logs,
+              [rating]: targetArray,
+            } as Record<Rating, string[]>,
+          }
+        };
+      })
     );
   }, [selectedStudentId]);
   
@@ -165,7 +227,8 @@ const App: React.FC = () => {
           try {
             const newState: AppState = JSON.parse(e.target.result as string);
             if(newState.students && newState.subjects) {
-              setStudents(newState.students);
+              const migrated = newState.students.map(migrateStudentAssessments);
+              setStudents(migrated);
               setSubjects(newState.subjects);
               setSelectedStudentId(newState.students[0]?.id || null);
               alert("Daten erfolgreich importiert!");
@@ -264,7 +327,8 @@ const App: React.FC = () => {
             <AssessmentForm
               student={selectedStudent}
               subjects={subjects}
-              onAssessmentChange={handleAssessmentChange}
+              onAssessmentClick={handleAssessmentClick}
+              onDeleteClickTime={handleDeleteClickTime}
               onCompetencyTextChange={handleCompetencyTextChange}
               onCategoryNameChange={handleCategoryNameChange}
               onAddCompetency={addCompetency}

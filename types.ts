@@ -27,7 +27,8 @@ export interface Subject {
 export interface Student {
   id: string;
   name: string;
-  assessments: Record<string, Rating>; // key: competency.id
+  // key: competency.id, value: Log der Klickzeitpunkte je Option
+  assessments: Record<string, Record<Rating, string[]>>;
 }
 
 export interface AppState {

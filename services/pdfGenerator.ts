@@ -15,6 +15,19 @@ const getRatingText = (rating: Rating): string => {
   }
 };
 
+const getMajorityRating = (logs: Record<Rating, string[]> | undefined): Rating => {
+  if (!logs) return Rating.NotTaught;
+  const counts: Array<{ r: Rating; c: number }> = [
+    { r: Rating.Excellent, c: logs[Rating.Excellent]?.length || 0 },
+    { r: Rating.Proficient, c: logs[Rating.Proficient]?.length || 0 },
+    { r: Rating.Partial, c: logs[Rating.Partial]?.length || 0 },
+    { r: Rating.Low, c: logs[Rating.Low]?.length || 0 },
+    { r: Rating.NotTaught, c: logs[Rating.NotTaught]?.length || 0 },
+  ];
+  counts.sort((a, b) => b.c - a.c);
+  return counts[0].c > 0 ? counts[0].r : Rating.NotTaught;
+};
+
 export const generatePdf = (student: Student, subjects: Subject[]): void => {
   const { jsPDF } = jspdf;
   const doc = new jsPDF();
@@ -28,10 +41,14 @@ export const generatePdf = (student: Student, subjects: Subject[]): void => {
     const tableData = subject.categories.flatMap(category => {
       // Add a row for the category name
       const categoryRow = [{ content: category.name, colSpan: 2, styles: { fontStyle: 'bold', fillColor: '#f1f5f9' } }];
-      const competencyRows = category.competencies.map(competency => [
-        `  - ${competency.text}`,
-        getRatingText(student.assessments[competency.id] ?? Rating.NotTaught),
-      ]);
+      const competencyRows = category.competencies.map(competency => {
+        const logs = (student.assessments as any)[competency.id] as Record<Rating, string[]> | undefined;
+        const majority = getMajorityRating(logs);
+        return [
+          `  - ${competency.text}`,
+          getRatingText(majority),
+        ];
+      });
       return [categoryRow, ...competencyRows];
     });
 

@@ -8,7 +8,8 @@ interface CategorySectionProps {
   subjectId: string;
   category: Category;
   student: Student;
-  onAssessmentChange: (competencyId: string, rating: Rating) => void;
+  onAssessmentClick: (competencyId: string, rating: Rating) => void;
+  onDeleteClickTime: (competencyId: string, rating: Rating, index: number) => void;
   onCompetencyTextChange: (subjectId: string, categoryId: string, competencyId: string, newText: string) => void;
   onCategoryNameChange: (subjectId: string, categoryId: string, newName: string) => void;
   onAddCompetency: (subjectId: string, categoryId: string) => void;
@@ -50,7 +51,8 @@ const CategorySection: React.FC<CategorySectionProps> = ({
     subjectId, 
     category, 
     student, 
-    onAssessmentChange,
+    onAssessmentClick,
+    onDeleteClickTime,
     onCompetencyTextChange,
     onCategoryNameChange,
     onAddCompetency
@@ -82,8 +84,9 @@ const CategorySection: React.FC<CategorySectionProps> = ({
                 </button>
             </div>
             <RatingControl
-              value={student.assessments[competency.id] ?? Rating.NotTaught}
-              onChange={(rating) => onAssessmentChange(competency.id, rating)}
+              logs={(student.assessments as any)[competency.id]}
+              onClickOption={(rating) => onAssessmentClick(competency.id, rating)}
+              onDeleteClickTime={(rating, index) => onDeleteClickTime(competency.id, rating, index)}
             />
           </div>
         ))}

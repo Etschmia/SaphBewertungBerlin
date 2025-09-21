@@ -7,7 +7,8 @@ import { ChevronDownIcon } from './Icons';
 interface SubjectAccordionProps {
   subject: Subject;
   student: Student;
-  onAssessmentChange: (competencyId: string, rating: Rating) => void;
+  onAssessmentClick: (competencyId: string, rating: Rating) => void;
+  onDeleteClickTime: (competencyId: string, rating: Rating, index: number) => void;
   onCompetencyTextChange: (subjectId: string, categoryId: string, competencyId: string, newText: string) => void;
   onCategoryNameChange: (subjectId: string, categoryId: string, newName: string) => void;
   onAddCompetency: (subjectId: string, categoryId: string) => void;
@@ -17,7 +18,8 @@ interface SubjectAccordionProps {
 const SubjectAccordion: React.FC<SubjectAccordionProps> = ({ 
     subject, 
     student, 
-    onAssessmentChange, 
+    onAssessmentClick, 
+    onDeleteClickTime,
     onCompetencyTextChange,
     onCategoryNameChange,
     onAddCompetency,
@@ -42,7 +44,8 @@ const SubjectAccordion: React.FC<SubjectAccordionProps> = ({
               subjectId={subject.id}
               category={category}
               student={student}
-              onAssessmentChange={onAssessmentChange}
+            onAssessmentClick={onAssessmentClick}
+            onDeleteClickTime={onDeleteClickTime}
               onCompetencyTextChange={onCompetencyTextChange}
               onCategoryNameChange={onCategoryNameChange}
               onAddCompetency={onAddCompetency}
