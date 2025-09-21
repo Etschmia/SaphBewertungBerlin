@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark &));
+
 /* Emerald Theme - nur Akzentfarben ändern */
 .theme-emerald .bg-blue-500 {
   background-color: rgb(16 185 129) !important; /* emerald-500 */
