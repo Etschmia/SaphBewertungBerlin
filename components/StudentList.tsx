@@ -44,7 +44,7 @@ const AssessmentProgressBars: React.FC<{ student: Student; subjects: Subject[] }
         return (
           <div
             key={subject.id}
-            className={`w-1.5 h-4 rounded-full ${barColor}`}
+            className={`w-3 h-4 rounded-full ${barColor}`}
             title={`${subject.name}: ${status === 'none' ? 'Keine Bewertung' : status === 'partial' ? 'Teilweise bewertet' : 'Vollständig bewertet'}`}
           />
         );
