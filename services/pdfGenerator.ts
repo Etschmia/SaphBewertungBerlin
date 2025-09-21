@@ -1,5 +1,5 @@
 // FIX: 'Rating' is used as a value, so it cannot be a type-only import.
-import { Rating, type Student, type Subject } from '../types';
+import { Rating, type Student, type Subject, getMostFrequentRating } from '../types';
 
 // These are expected to be available globally from the scripts in index.html
 declare const jspdf: any;
@@ -28,10 +28,14 @@ export const generatePdf = (student: Student, subjects: Subject[]): void => {
     const tableData = subject.categories.flatMap(category => {
       // Add a row for the category name
       const categoryRow = [{ content: category.name, colSpan: 2, styles: { fontStyle: 'bold', fillColor: '#f1f5f9' } }];
-      const competencyRows = category.competencies.map(competency => [
-        `  - ${competency.text}`,
-        getRatingText(student.assessments[competency.id] ?? Rating.NotTaught),
-      ]);
+      const competencyRows = category.competencies.map(competency => {
+        const entries = student.assessments[competency.id] || [];
+        const mostFrequentRating = getMostFrequentRating(entries) ?? Rating.NotTaught;
+        return [
+          `  - ${competency.text}`,
+          getRatingText(mostFrequentRating),
+        ];
+      });
       return [categoryRow, ...competencyRows];
     });
 

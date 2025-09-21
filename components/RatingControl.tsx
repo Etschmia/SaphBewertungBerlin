@@ -1,10 +1,11 @@
 
-import React from 'react';
-import { Rating } from '../types';
+import React, { useState } from 'react';
+import { Rating, RatingEntry, calculateDisplayState, getRatingEntriesForRating } from '../types';
 
 interface RatingControlProps {
-  value: Rating;
-  onChange: (rating: Rating) => void;
+  entries: RatingEntry[];
+  onAddRating: (rating: Rating) => void;
+  onShowHistory: (rating: Rating, entries: RatingEntry[]) => void;
 }
 
 const ratingOptions = [
@@ -15,9 +16,23 @@ const ratingOptions = [
   { value: Rating.NotTaught, label: 'n.v. (nicht vermittelt)' },
 ];
 
-const RatingIcon: React.FC<{ rating: Rating, isSelected: boolean }> = ({ rating, isSelected }) => {
-  const baseClasses = "w-6 h-6 rounded-full border-2 border-slate-400 dark:border-gray-500 transition-all cursor-pointer";
-  const selectedClasses = "ring-2 ring-blue-500 dark:ring-blue-400 ring-offset-1 dark:ring-offset-gray-800";
+const RatingIcon: React.FC<{ 
+  rating: Rating, 
+  count: number,
+  thickness: 'thin' | 'medium' | 'thick'
+}> = ({ rating, count, thickness }) => {
+  const getBorderWidth = () => {
+    switch (thickness) {
+      case 'thin': return 'border-2';
+      case 'medium': return 'border-4';
+      case 'thick': return 'border-6';
+      default: return 'border-2';
+    }
+  };
+
+  const baseClasses = `w-6 h-6 rounded-full ${getBorderWidth()} border-slate-400 dark:border-gray-500 transition-all cursor-pointer`;
+  const hasRatings = count > 0;
+  const selectedClasses = hasRatings ? "ring-2 ring-blue-500 dark:ring-blue-400 ring-offset-1 dark:ring-offset-gray-800" : "";
 
   const getStyle = () => {
     switch (rating) {
@@ -55,23 +70,87 @@ const RatingIcon: React.FC<{ rating: Rating, isSelected: boolean }> = ({ rating,
   }
 
   return <div
-    className={`${baseClasses} ${getStyle()} ${isSelected ? selectedClasses : ''}`}
+    className={`${baseClasses} ${getStyle()} ${selectedClasses}`}
     style={getCustomStyle()}
   ></div>;
 }
 
-const RatingControl: React.FC<RatingControlProps> = ({ value, onChange }) => {
+const RatingControl: React.FC<RatingControlProps> = ({ entries, onAddRating, onShowHistory }) => {
+  // Validate props
+  if (!Array.isArray(entries)) {
+    console.warn('Invalid entries prop in RatingControl:', entries);
+    return (
+      <div className="flex items-center justify-end space-x-4 text-red-500">
+        <span className="text-sm">Fehler beim Laden der Bewertungen</span>
+      </div>
+    );
+  }
+
+  if (typeof onAddRating !== 'function' || typeof onShowHistory !== 'function') {
+    console.error('Invalid callback props in RatingControl');
+    return (
+      <div className="flex items-center justify-end space-x-4 text-red-500">
+        <span className="text-sm">Bewertungsfunktionen nicht verfügbar</span>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center justify-end space-x-4">
-      {ratingOptions.map(option => (
-        <div
-          key={option.value}
-          onClick={() => onChange(option.value)}
-          title={option.label}
-        >
-          <RatingIcon rating={option.value} isSelected={value === option.value} />
-        </div>
-      ))}
+      {ratingOptions.map(option => {
+        try {
+          const displayState = calculateDisplayState(entries, option.value);
+          const ratingEntries = getRatingEntriesForRating(entries, option.value);
+          
+          return (
+            <div
+              key={option.value}
+              className="flex items-center space-x-1"
+              title={option.label}
+            >
+              <div
+                onClick={() => {
+                  try {
+                    onAddRating(option.value);
+                  } catch (error) {
+                    console.error('Error adding rating:', error);
+                  }
+                }}
+                className="cursor-pointer"
+              >
+                <RatingIcon 
+                  rating={option.value} 
+                  count={displayState.count}
+                  thickness={displayState.thickness}
+                />
+              </div>
+              {displayState.showBadge && (
+                <button
+                  onClick={(e) => {
+                    try {
+                      e.stopPropagation();
+                      onShowHistory(option.value, ratingEntries);
+                    } catch (error) {
+                      console.error('Error showing history:', error);
+                    }
+                  }}
+                  className="bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center cursor-pointer transition-colors"
+                  title={`${displayState.count} Bewertung${displayState.count > 1 ? 'en' : ''} - Klicken für Details`}
+                >
+                  {displayState.count}
+                </button>
+              )}
+            </div>
+          );
+        } catch (error) {
+          console.error('Error rendering rating option:', option.value, error);
+          return (
+            <div key={option.value} className="w-6 h-6 bg-red-100 border border-red-300 rounded-full flex items-center justify-center">
+              <span className="text-red-500 text-xs">!</span>
+            </div>
+          );
+        }
+      })}
     </div>
   );
 };

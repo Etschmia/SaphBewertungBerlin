@@ -1,12 +1,13 @@
 
 import React from 'react';
-import type { Student, Subject, Rating } from '../types';
+import type { Student, Subject, Rating, RatingEntry } from '../types';
 import SubjectAccordion from './SubjectAccordion';
 
 interface AssessmentFormProps {
   student: Student;
   subjects: Subject[];
-  onAssessmentChange: (competencyId: string, rating: Rating) => void;
+  onAssessmentAdd: (competencyId: string, rating: Rating) => void;
+  onAssessmentDelete: (competencyId: string, rating: Rating, timestamp: number) => void;
   onCompetencyTextChange: (subjectId: string, categoryId: string, competencyId: string, newText: string) => void;
   onCategoryNameChange: (subjectId: string, categoryId: string, newName: string) => void;
   onAddCompetency: (subjectId: string, categoryId: string) => void;
@@ -15,7 +16,8 @@ interface AssessmentFormProps {
 const AssessmentForm: React.FC<AssessmentFormProps> = ({ 
     student, 
     subjects, 
-    onAssessmentChange,
+    onAssessmentAdd,
+    onAssessmentDelete,
     onCompetencyTextChange,
     onCategoryNameChange,
     onAddCompetency
@@ -27,7 +29,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
           key={subject.id}
           subject={subject}
           student={student}
-          onAssessmentChange={onAssessmentChange}
+          onAssessmentAdd={onAssessmentAdd}
+          onAssessmentDelete={onAssessmentDelete}
           onCompetencyTextChange={onCompetencyTextChange}
           onCategoryNameChange={onCategoryNameChange}
           onAddCompetency={onAddCompetency}
