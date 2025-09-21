@@ -26,7 +26,7 @@ const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose, version }) => 
         <div className="p-6 space-y-4">
           <div className="text-center">
             <h3 className="text-2xl font-bold text-slate-800 mb-2">
-              Zeugnis Assistent Saph Berlin
+              Bewertungs-Assistent Saph Berlin
             </h3>
             <p className="text-sm text-slate-600 mb-4">Version {version}</p>
           </div>

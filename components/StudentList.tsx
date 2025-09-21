@@ -66,8 +66,8 @@ const StudentList: React.FC<StudentListProps> = ({ students, subjects, selectedS
               <div
                 onClick={() => onSelectStudent(student.id)}
                 className={`flex items-center p-3 rounded-lg cursor-pointer transition-all ${selectedStudentId === student.id
-                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-semibold shadow-sm'
-                    : 'bg-slate-50 dark:bg-gray-700 hover:bg-slate-200 dark:hover:bg-gray-600 text-slate-700 dark:text-gray-200'
+                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-semibold shadow-sm'
+                  : 'bg-slate-50 dark:bg-gray-700 hover:bg-slate-200 dark:hover:bg-gray-600 text-slate-700 dark:text-gray-200'
                   }`}
               >
                 <span className="flex-1">{student.name}</span>

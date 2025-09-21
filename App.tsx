@@ -523,7 +523,7 @@ const App: React.FC = () => {
       <div className="flex h-screen font-sans text-slate-800 dark:text-gray-100">
         <aside className="w-1/4 max-w-sm bg-white dark:bg-gray-800 border-r border-slate-200 dark:border-gray-700 flex flex-col">
           <div className="p-4 border-b border-slate-200 dark:border-gray-700">
-            <h1 className="text-2xl font-bold text-slate-700 dark:text-gray-100">Zeugnis Assistent</h1>
+            <h1 className="text-2xl font-bold text-slate-700 dark:text-gray-100">Bewertungs-Assistent</h1>
           </div>
           <div className="p-4 flex-grow overflow-y-auto">
             <ErrorBoundary>
