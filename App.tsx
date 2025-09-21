@@ -377,7 +377,13 @@ const App: React.FC = () => {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
       const downloadAnchorNode = document.createElement('a');
       downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", `zeugnis_daten_${new Date().toISOString().split('T')[0]}.json`);
+      
+      // Erstelle Dateiname mit "BewertungSaph" und aktuellem Datum/Uhrzeit
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+      const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-MM-SS
+      downloadAnchorNode.setAttribute("download", `BewertungSaph_${dateStr}_${timeStr}.json`);
+      
       document.body.appendChild(downloadAnchorNode);
       downloadAnchorNode.click();
       downloadAnchorNode.remove();
@@ -600,6 +606,10 @@ const App: React.FC = () => {
                         <p className="font-bold text-green-700 mt-2">
                           Alle eingegebenen Daten bleiben lokal! Nichts verlässt Ihren Rechner. Sie speichern auf Ihrem Rechner und Sie laden von Ihrem Rechner, und zwar nicht in die Cloud, sondern nur in Ihren Browser.
                         </p>
+                        <p className="mt-2">Keine Registrierung, keine Anmeldung, keine Datenübertragung. 
+                        </p>
+                        <p className="mt-2">Kommen Sie das nächste Mal auf diese Seite, sind Ihre Daten weiterhin verfügbar. Ihr Browser speichert die Daten für Sie bei sich selbst.</p>
+                        <p className="mt-2">Mit der Option "Speichern" können (und sollten) Sie trotzdem Ihre Daten als JSON-Datei herunterladen und später wieder importieren.</p>
                     </div>
                     <div className="absolute bottom-4 right-4 text-right text-xs text-slate-400 dark:text-gray-500">
                       <span>© 2025 Tobias Brendler · </span>
