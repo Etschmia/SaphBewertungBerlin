@@ -63,15 +63,15 @@ const RatingHistoryModal: React.FC<RatingHistoryModalProps> = ({
         console.warn('Invalid timestamp in formatTimestamp:', timestamp);
         return 'Ungültiges Datum';
       }
-      
+
       const date = new Date(timestamp);
-      
+
       // Check if date is valid
       if (isNaN(date.getTime())) {
         console.warn('Invalid date created from timestamp:', timestamp);
         return 'Ungültiges Datum';
       }
-      
+
       return new Intl.DateTimeFormat('de-DE', {
         day: '2-digit',
         month: '2-digit',
@@ -111,27 +111,27 @@ const RatingHistoryModal: React.FC<RatingHistoryModalProps> = ({
         console.warn('Invalid entries array in RatingHistoryModal:', entries);
         return [];
       }
-      
+
       // Filter and validate entries before sorting
       const validEntries = entries.filter(entry => {
         if (!entry || typeof entry !== 'object') {
           console.warn('Invalid entry structure:', entry);
           return false;
         }
-        
+
         if (typeof entry.timestamp !== 'number' || entry.timestamp <= 0) {
           console.warn('Invalid timestamp in entry:', entry);
           return false;
         }
-        
+
         if (typeof entry.rating !== 'number' || entry.rating < 0 || entry.rating > 4) {
           console.warn('Invalid rating in entry:', entry);
           return false;
         }
-        
+
         return true;
       });
-      
+
       return [...validEntries].sort((a, b) => b.timestamp - a.timestamp);
     } catch (error) {
       console.error('Error sorting entries:', error);
@@ -140,10 +140,10 @@ const RatingHistoryModal: React.FC<RatingHistoryModalProps> = ({
   }, [entries]);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div 
+    <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50">
+      <div
         ref={modalRef}
-        className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[80vh] flex flex-col"
+        className="bg-white rounded-lg shadow-2xl border border-gray-200 max-w-md w-full mx-4 max-h-[80vh] flex flex-col"
       >
         {/* Header with close button (Requirement 3.5) */}
         <div className="flex justify-between items-center p-6 border-b border-slate-200">
@@ -158,7 +158,7 @@ const RatingHistoryModal: React.FC<RatingHistoryModalProps> = ({
             <XIcon className="w-5 h-5" />
           </button>
         </div>
-        
+
         {/* Content area with table (Requirement 3.1, 3.2, 3.3, 3.4) */}
         <div className="p-6 flex-1 overflow-auto">
           {sortedEntries.length === 0 ? (
@@ -170,11 +170,11 @@ const RatingHistoryModal: React.FC<RatingHistoryModalProps> = ({
               <p className="text-sm text-slate-600 mb-4">
                 Insgesamt {sortedEntries.length} Bewertung{sortedEntries.length !== 1 ? 'en' : ''}
               </p>
-              
+
               {/* Table with timestamps and delete buttons */}
               <div className="space-y-2">
                 {sortedEntries.map((entry, index) => (
-                  <div 
+                  <div
                     key={`${entry.timestamp}-${index}`}
                     className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200"
                   >
@@ -182,7 +182,7 @@ const RatingHistoryModal: React.FC<RatingHistoryModalProps> = ({
                     <span className="text-slate-700 font-mono text-sm">
                       {formatTimestamp(entry.timestamp)}
                     </span>
-                    
+
                     {/* Delete button with error handling (Requirement 3.3, 3.4) */}
                     <button
                       onClick={() => {
