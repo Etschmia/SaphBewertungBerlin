@@ -14,6 +14,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { generatePdf } from './services/pdfGenerator';
 import { useUpdateService, installPWA } from './services/updateService';
 import { PlusIcon, ArrowDownTrayIcon, ArrowUpTrayIcon, DocumentArrowDownIcon } from './components/Icons';
+import packageJson from './package.json';
 
 const App: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
@@ -602,7 +603,7 @@ const App: React.FC = () => {
           <AboutModal 
             isOpen={showAboutModal}
             onClose={() => setShowAboutModal(false)}
-            version="0.0.1"
+            version={packageJson.version}
           />
         </ErrorBoundary>
         
