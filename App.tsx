@@ -597,18 +597,21 @@ const App: React.FC = () => {
                 <div className="relative flex items-center justify-center h-full p-6">
                     <div className="text-center text-slate-500 dark:text-gray-400">
                         <h3 className="text-2xl font-semibold">Willkommen!</h3>
-                        <p className="mt-2">Bitte fügen Sie einen Schüler hinzu oder wählen Sie einen aus der Liste aus, um mit der Bewertung zu beginnen.</p>
                         <p className="mt-2">
                           Dieses Tool unterstützt die Bewertung in der Schulanfangsphase (Saph) im Land Berlin, 
                           entsprechend den Vorgaben des Dokuments 
                           <p className="font-semibold">Schul Z 101 Zeugnis der Schulanfangsphase indikatorenorientiert (Version 01.25)</p>.
                         </p>
+                        <p className="mt-2">Fügen Sie einen Schüler hinzu, um mit der Bewertung zu beginnen.</p>                        
+                        <p className="mt-2">Bewerten Sie Ihre Schüler das ganze Schuljahr hindurch und betrachten Sie vor dem Zeugnis die Entwicklung Ihrer Schüler.</p>
                         <p className="font-bold text-green-700 mt-2">
                           Alle eingegebenen Daten bleiben lokal! Nichts verlässt Ihren Rechner. Sie speichern auf Ihrem Rechner und Sie laden von Ihrem Rechner, und zwar nicht in die Cloud, sondern nur in Ihren Browser.
                         </p>
                         <p className="mt-2">Keine Registrierung, keine Anmeldung, keine Datenübertragung. 
                         </p>
-                        <p className="mt-2">Kommen Sie das nächste Mal auf diese Seite, sind Ihre Daten weiterhin verfügbar. Ihr Browser speichert die Daten für Sie bei sich selbst.</p>
+                        <p className="mt-2">&nbsp;</p>
+                        <p className="mt-2">Sie können diese App auch als PWA installieren (siehe Extras- Menü) und offline verwenden.</p>
+                        <p className="mt-2">Besuchen Sie das nächste Mal diese Seite, sind Ihre Daten weiterhin verfügbar. Ihr Browser speichert sie bei sich.</p>
                         <p className="mt-2">Mit der Option "Speichern" können (und sollten) Sie trotzdem Ihre Daten als JSON-Datei herunterladen und später wieder importieren.</p>
                     </div>
                     <div className="absolute bottom-4 right-4 text-right text-xs text-slate-400 dark:text-gray-500">
