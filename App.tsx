@@ -529,6 +529,7 @@ const App: React.FC = () => {
             <ErrorBoundary>
               <StudentList
                 students={students}
+                subjects={subjects}
                 selectedStudentId={selectedStudentId}
                 onSelectStudent={setSelectedStudentId}
                 onDeleteStudent={deleteStudent}
