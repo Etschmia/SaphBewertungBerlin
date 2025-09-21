@@ -1,11 +1,11 @@
 
-# Zeugnis Assistent
+# Bewertungs‑Assistent
 
 Eine webbasierte Anwendung zur Erfassung und Verwaltung von Schülerbewertungen basierend auf einem vordefinierten Kompetenzraster für die Schulanfangsphase.
 
 ## Über das Projekt
 
-Der Zeugnis Assistent ist eine Single-Page-Application, die Lehrern dabei hilft, Schülerbewertungen strukturiert zu erfassen und zu verwalten. Die Anwendung basiert auf einem Kompetenzraster mit 12 Indikatoren für die Schulanfangsphase und ermöglicht eine detaillierte Bewertung in verschiedenen Fächern.
+Der Bewertungs‑Assistent ist eine Single-Page-Application, die Lehrkräften hilft, Schülerbewertungen strukturiert zu erfassen und zu verwalten. Die Anwendung basiert auf einem Kompetenzraster mit 12 Indikatoren für die Schulanfangsphase und ermöglicht eine detaillierte Bewertung in verschiedenen Fächern.
 
 ### Hauptfunktionen
 
@@ -57,10 +57,12 @@ Der Zeugnis Assistent ist eine Single-Page-Application, die Lehrern dabei hilft,
 
 ### Technologie-Stack
 - **Frontend**: React 19 mit TypeScript
-- **Build-Tool**: Vite
-- **Styling**: Tailwind CSS (geplant, aktuell inline Styles)
-- **PDF-Generierung**: jsPDF mit autoTable Plugin
+- **Build-Tool**: Vite 6
+- **Styling**: Tailwind CSS 4 (mit @tailwindcss/vite)
+- **PDF-Generierung**: jsPDF mit autoTable Plugin (per CDN in `index.html` eingebunden)
 - **Icons**: Eigene SVG-Komponenten
+- **Tests**: Vitest, Testing Library, jsdom
+- **PWA**: Manifest, Service Worker, Install‑Prompt, Update‑Check
 
 ### Architektur
 - **Zustandsverwaltung**: React useState/useEffect mit localStorage-Synchronisation
@@ -70,7 +72,7 @@ Der Zeugnis Assistent ist eine Single-Page-Application, die Lehrern dabei hilft,
 ## Installation und Ausführung
 
 ### Voraussetzungen
-- Node.js (Version 16 oder höher)
+- Node.js (Version \u2265 18, empfohlen: 20 LTS)
 - npm oder yarn
 
 ### Lokale Entwicklung
@@ -94,6 +96,14 @@ npm run build
 npm run preview
 ```
 
+### Tests
+
+```bash
+npm test          # Watch-Modus
+npm run test:run  # Headless/CI
+npm run test:ui   # Vitest UI
+```
+
 ## Implementierungsstand
 
 ### ✅ Vollständig implementiert
@@ -102,22 +112,27 @@ npm run preview
 - Kompetenzraster mit allen Fächern und Kategorien
 - Bewertungssystem mit 5-stufiger Skala
 - LocalStorage-Integration für Datenpersistierung
-- JSON-Export und -Import
+- JSON-Export und -Import (inkl. Migration/Validierung)
 - PDF-Export mit strukturiertem Layout
 - Bearbeitung von Kompetenztexten und Kategorienamen
 - Hinzufügen neuer Kompetenzen
+- Dark/Light-Theme mit Persistenz
+- PWA-Funktionalität (Manifest, Service Worker, Install‑Prompt, Update‑Check)
+- Fehlerbehandlung über ErrorBoundary
+- Bewertungsverlauf mit mehreren Einträgen pro Kompetenz
 
 ### 🔄 In Arbeit / Verbesserungen
-- Tailwind CSS Integration (aktuell inline Styles)
 - Responsive Design Optimierung
 - Erweiterte PDF-Layout-Anpassungen
 - Benutzerfreundlichkeits-Verbesserungen
 
 ### 📋 Geplante Features
-- Backup/Restore-Funktionalität
 - Druckoptimierung
 - Erweiterte Filteroptionen
 - Bulk-Operationen für Bewertungen
+
+### Hinweise
+- PDF-Erzeugung: jsPDF und das autoTable‑Plugin werden per CDN in `index.html` geladen. Für vollständig offline nutzbare Builds können die Bibliotheken auch lokal installiert und importiert werden.
 
 ## Datenschutz und Sicherheit
 
@@ -129,20 +144,38 @@ npm run preview
 ## Projektstruktur
 
 ```
-├── components/          # React-Komponenten
+├── components/            # React-Komponenten
+│   ├── AboutModal.tsx
 │   ├── AssessmentForm.tsx
 │   ├── CategorySection.tsx
+│   ├── ErrorBoundary.tsx
+│   ├── ExtrasDropdown.tsx
 │   ├── Icons.tsx
 │   ├── RatingControl.tsx
+│   ├── RatingHistoryModal.tsx
 │   ├── StudentList.tsx
-│   └── SubjectAccordion.tsx
-├── data/               # Initiale Datenstrukturen
+│   ├── SubjectAccordion.tsx
+│   ├── ThemeSelector.tsx
+│   └── UpdateInfoModal.tsx
+├── data/
 │   └── initialData.ts
-├── services/           # Hilfsfunktionen
-│   └── pdfGenerator.ts
-├── docs/              # Dokumentation
-│   └── PLANUNG.md
-├── App.tsx            # Hauptkomponente
-├── types.ts           # TypeScript-Definitionen
-└── index.tsx          # Einstiegspunkt
+├── services/
+│   ├── pdfGenerator.ts
+│   └── updateService.ts
+├── utils/
+│   ├── updateManager.ts
+│   └── validation.ts
+├── public/
+│   ├── manifest.json
+│   ├── sw.js
+│   ├── icon-192.png
+│   └── icon-512.png
+├── src/test/
+│   ├── *.test.ts(x)
+│   └── setup.ts
+├── App.tsx
+├── index.tsx
+├── tailwind.css
+├── vite.config.ts
+└── vitest.config.ts
 ```

@@ -588,10 +588,24 @@ const App: React.FC = () => {
                   onAddCompetency={addCompetency}
                 />
               ) : (
-                <div className="flex items-center justify-center h-full">
+                <div className="relative flex items-center justify-center h-full p-6">
                     <div className="text-center text-slate-500 dark:text-gray-400">
                         <h3 className="text-2xl font-semibold">Willkommen!</h3>
-                        <p>Bitte fügen Sie einen Schüler hinzu oder wählen Sie einen aus der Liste aus, um mit der Bewertung zu beginnen.</p>
+                        <p className="mt-2">Bitte fügen Sie einen Schüler hinzu oder wählen Sie einen aus der Liste aus, um mit der Bewertung zu beginnen.</p>
+                        <p className="mt-2">
+                          Dieses Tool unterstützt die Bewertung in der Schulanfangsphase (Saph) im Land Berlin, 
+                          entsprechend den Vorgaben des Dokuments 
+                          <p className="font-semibold">Schul Z 101 Zeugnis der Schulanfangsphase indikatorenorientiert (Version 01.25)</p>.
+                        </p>
+                        <p className="font-bold text-green-700 mt-2">
+                          Alle eingegebenen Daten bleiben lokal! Nichts verlässt Ihren Rechner. Sie speichern auf Ihrem Rechner und Sie laden von Ihrem Rechner, und zwar nicht in die Cloud, sondern nur in Ihren Browser.
+                        </p>
+                    </div>
+                    <div className="absolute bottom-4 right-4 text-right text-xs text-slate-400 dark:text-gray-500">
+                      <span>© 2025 Tobias Brendler · </span>
+                      <a href="https://github.com/Etschmia/SaphBewertungBerlin" className="underline hover:no-underline" target="_blank" rel="noopener noreferrer">
+                        Projekthomepage
+                      </a>
                     </div>
                 </div>
               )}
