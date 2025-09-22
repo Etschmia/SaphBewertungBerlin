@@ -606,14 +606,14 @@ const App: React.FC = () => {
                         <p className="mt-2">Fügen Sie einen Schüler hinzu, um mit der Bewertung zu beginnen.</p>                        
                         <p className="mt-2">Bewerten Sie Ihre Schüler das ganze Schuljahr hindurch und betrachten Sie vor dem Zeugnis die Entwicklung Ihrer Schüler.</p>
                         <p className="font-bold text-green-700 mt-2">
-                          Alle eingegebenen Daten bleiben lokal! Nichts verlässt Ihren Rechner. Sie speichern auf Ihrem Rechner und Sie laden von Ihrem Rechner, und zwar nicht in die Cloud, sondern nur in Ihren Browser.
+                          Alle eingegebenen Daten bleiben lokal! Nichts verlässt Ihren Rechner.
                         </p>
                         <p className="mt-2">Keine Registrierung, keine Anmeldung, keine Datenübertragung. 
                         </p>
                         <p className="mt-2">&nbsp;</p>
                         <p className="mt-2">Sie können diese App auch als PWA installieren (siehe Extras- Menü) und offline verwenden.</p>
                         <p className="mt-2">Besuchen Sie das nächste Mal diese Seite, sind Ihre Daten weiterhin verfügbar. Ihr Browser speichert sie bei sich.</p>
-                        <p className="mt-2">Mit der Option "Speichern" können (und sollten) Sie trotzdem Ihre Daten als JSON-Datei herunterladen und später wieder importieren.</p>
+                        <p className="mt-2">Mit der Option "Speichern" können (und sollten) Sie trotzdem Ihre Daten als JSON-Datei sichern und später wieder einlesen.</p>
                     </div>
                     <div className="absolute bottom-4 right-4 text-right text-xs text-slate-400 dark:text-gray-500">
                       <span>© 2025 Tobias Brendler · </span>
