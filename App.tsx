@@ -583,7 +583,6 @@ const App: React.FC = () => {
               </button>
               <ExtrasDropdown 
                 onUpdate={handleUpdate}
-                onInstallApp={handleInstallApp}
                 onAbout={handleAbout}
                 onUsage={handleUsage}
               />
@@ -618,7 +617,7 @@ const App: React.FC = () => {
                         <p className="mt-2">Keine Registrierung, keine Anmeldung, keine Datenübertragung. 
                         </p>
                         <p className="mt-2">&nbsp;</p>
-                        <p className="mt-2">Sie können diese App auch als PWA installieren (siehe Extras- Menü) und offline verwenden.</p>
+                        
                         <p className="mt-2">Besuchen Sie das nächste Mal diese Seite, sind Ihre Daten weiterhin verfügbar. Ihr Browser speichert sie bei sich.</p>
                         <p className="mt-2">Mit der Option "Speichern" können (und sollten) Sie trotzdem Ihre Daten als JSON-Datei sichern und später wieder einlesen.</p>
                     </div>
