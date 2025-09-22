@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { DotsVerticalIcon, RefreshIcon, DownloadIcon, InfoIcon, ChevronDownIcon } from './Icons';
+import { DotsVerticalIcon, RefreshIcon, DownloadIcon, InfoIcon, ChevronDownIcon, BookOpenIcon } from './Icons';
 
 interface ExtrasDropdownProps {
   onUpdate: () => void;
   onInstallApp: () => void;
   onAbout: () => void;
+  onUsage: () => void;
 }
 
-const ExtrasDropdown: React.FC<ExtrasDropdownProps> = ({ onUpdate, onInstallApp, onAbout }) => {
+const ExtrasDropdown: React.FC<ExtrasDropdownProps> = ({ onUpdate, onInstallApp, onAbout, onUsage }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -58,6 +59,13 @@ const ExtrasDropdown: React.FC<ExtrasDropdownProps> = ({ onUpdate, onInstallApp,
             Install App
           </button>
           <hr className="my-1 border-slate-200" />
+          <button
+            onClick={() => handleMenuClick(onUsage)}
+            className="w-full flex items-center gap-3 px-4 py-2 text-left text-slate-700 hover:bg-slate-50 transition-colors"
+          >
+            <BookOpenIcon className="w-4 h-4" />
+            Benutzung
+          </button>
           <button
             onClick={() => handleMenuClick(onAbout)}
             className="w-full flex items-center gap-3 px-4 py-2 text-left text-slate-700 hover:bg-slate-50 transition-colors"

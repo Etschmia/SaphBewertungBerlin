@@ -10,6 +10,7 @@ import ExtrasDropdown from './components/ExtrasDropdown';
 import ThemeSelector from './components/ThemeSelector';
 import AboutModal from './components/AboutModal';
 import UpdateInfoModal from './components/UpdateInfoModal';
+import UsageModal from './components/UsageModal';
 import ErrorBoundary from './components/ErrorBoundary';
 import { generatePdf } from './services/pdfGenerator';
 import { useUpdateService, installPWA } from './services/updateService';
@@ -22,6 +23,7 @@ const App: React.FC = () => {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const [showUsageModal, setShowUsageModal] = useState(false);
   const [updateInfoStatus, setUpdateInfoStatus] = useState<'success' | 'fail' | 'unchanged'>('unchanged');
   const [updateBuildInfo, setUpdateBuildInfo] = useState<any>(null);
   const [isUpdateInfoModalOpen, setIsUpdateInfoModalOpen] = useState(false);
@@ -523,6 +525,10 @@ const App: React.FC = () => {
     setShowAboutModal(true);
   };
 
+  const handleUsage = () => {
+    setShowUsageModal(true);
+  };
+
   const selectedStudent = useMemo(() => students.find(s => s.id === selectedStudentId), [students, selectedStudentId]);
 
   return (
@@ -579,6 +585,7 @@ const App: React.FC = () => {
                 onUpdate={handleUpdate}
                 onInstallApp={handleInstallApp}
                 onAbout={handleAbout}
+                onUsage={handleUsage}
               />
             </div>
           </header>
@@ -641,6 +648,13 @@ const App: React.FC = () => {
             onClose={() => setIsUpdateInfoModalOpen(false)}
             status={updateInfoStatus}
             buildInfo={updateBuildInfo}
+          />
+        </ErrorBoundary>
+        
+        <ErrorBoundary>
+          <UsageModal
+            isOpen={showUsageModal}
+            onClose={() => setShowUsageModal(false)}
           />
         </ErrorBoundary>
       </div>

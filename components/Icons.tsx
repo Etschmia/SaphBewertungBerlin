@@ -149,3 +149,22 @@ export const MoonIcon: React.FC<{className?: string}> = ({className}) => (
     <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
   </svg>
 );
+
+export const BookOpenIcon: React.FC<{className?: string}> = ({className}) => (
+  <svg {...iconProps} className={className || iconProps.className}>
+    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+    <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
+    <path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0" />
+    <line x1="3" y1="6" x2="3" y2="19" />
+    <line x1="12" y1="6" x2="12" y2="19" />
+    <line x1="21" y1="6" x2="21" y2="19" />
+  </svg>
+);
+
+export const XMarkIcon: React.FC<{className?: string}> = ({className}) => (
+  <svg {...iconProps} className={className || iconProps.className}>
+    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
