@@ -105,3 +105,333 @@
 .theme-rose .bg-blue-100 {
   background-color: rgb(255 228 230) !important; /* rose-100 */
 }
+
+/* Neon/Cyberpunk Theme - Komplettes Design */
+.theme-neon .bg-blue-500 {
+  background-color: rgb(34 211 238) !important; /* cyan-400 */
+}
+
+.theme-neon .hover\:bg-blue-600:hover {
+  background-color: rgb(6 182 212) !important; /* cyan-500 */
+}
+
+.theme-neon .text-blue-600 {
+  color: rgb(34 211 238) !important; /* cyan-400 */
+}
+
+.theme-neon .text-blue-700 {
+  color: rgb(6 182 212) !important; /* cyan-500 */
+}
+
+.theme-neon .text-blue-800 {
+  color: rgb(8 145 178) !important; /* cyan-600 */
+}
+
+.theme-neon .hover\:text-blue-800:hover {
+  color: rgb(8 145 178) !important; /* cyan-600 */
+}
+
+.theme-neon .bg-blue-50 {
+  background-color: rgb(236 254 255) !important; /* cyan-50 */
+}
+
+.theme-neon .bg-blue-100 {
+  background-color: rgb(207 250 254) !important; /* cyan-100 */
+}
+
+/* Neon Theme - Weitere UI-Elemente */
+.theme-neon .bg-slate-200 {
+  background-color: rgb(15 23 42) !important; /* slate-900 */
+}
+
+.theme-neon .hover\:bg-slate-300:hover {
+  background-color: rgb(30 41 59) !important; /* slate-800 */
+}
+
+.theme-neon .text-slate-700 {
+  color: rgb(34 211 238) !important; /* cyan-400 */
+}
+
+.theme-neon .bg-white {
+  background-color: rgb(8 47 73) !important; /* cyan-900 */
+}
+
+.theme-neon .border-slate-200 {
+  border-color: rgb(34 211 238) !important; /* cyan-400 */
+}
+
+.theme-neon .bg-slate-50 {
+  background-color: rgb(8 47 73) !important; /* cyan-900 */
+}
+
+.theme-neon .bg-green-500 {
+  background-color: rgb(34 211 238) !important; /* cyan-400 */
+}
+
+.theme-neon .hover\:bg-green-600:hover {
+  background-color: rgb(6 182 212) !important; /* cyan-500 */
+}
+
+/* Sunset/Orange Theme - Komplettes Design */
+.theme-sunset .bg-blue-500 {
+  background-color: rgb(249 115 22) !important; /* orange-500 */
+}
+
+.theme-sunset .hover\:bg-blue-600:hover {
+  background-color: rgb(234 88 12) !important; /* orange-600 */
+}
+
+.theme-sunset .text-blue-600 {
+  color: rgb(249 115 22) !important; /* orange-500 */
+}
+
+.theme-sunset .text-blue-700 {
+  color: rgb(234 88 12) !important; /* orange-600 */
+}
+
+.theme-sunset .text-blue-800 {
+  color: rgb(194 65 12) !important; /* orange-700 */
+}
+
+.theme-sunset .hover\:text-blue-800:hover {
+  color: rgb(194 65 12) !important; /* orange-700 */
+}
+
+.theme-sunset .bg-blue-50 {
+  background-color: rgb(255 247 237) !important; /* orange-50 */
+}
+
+.theme-sunset .bg-blue-100 {
+  background-color: rgb(255 237 213) !important; /* orange-100 */
+}
+
+/* Sunset Theme - Weitere UI-Elemente */
+.theme-sunset .bg-slate-200 {
+  background-color: rgb(251 146 60) !important; /* orange-400 */
+}
+
+.theme-sunset .hover\:bg-slate-300:hover {
+  background-color: rgb(249 115 22) !important; /* orange-500 */
+}
+
+.theme-sunset .text-slate-700 {
+  color: rgb(194 65 12) !important; /* orange-700 */
+}
+
+.theme-sunset .bg-white {
+  background-color: rgb(255 247 237) !important; /* orange-50 */
+}
+
+.theme-sunset .border-slate-200 {
+  border-color: rgb(251 146 60) !important; /* orange-400 */
+}
+
+.theme-sunset .bg-slate-50 {
+  background-color: rgb(255 247 237) !important; /* orange-50 */
+}
+
+.theme-sunset .bg-green-500 {
+  background-color: rgb(249 115 22) !important; /* orange-500 */
+}
+
+.theme-sunset .hover\:bg-green-600:hover {
+  background-color: rgb(234 88 12) !important; /* orange-600 */
+}
+
+/* Ocean/Teal Theme - Komplettes Design */
+.theme-ocean .bg-blue-500 {
+  background-color: rgb(20 184 166) !important; /* teal-500 */
+}
+
+.theme-ocean .hover\:bg-blue-600:hover {
+  background-color: rgb(15 118 110) !important; /* teal-600 */
+}
+
+.theme-ocean .text-blue-600 {
+  color: rgb(20 184 166) !important; /* teal-500 */
+}
+
+.theme-ocean .text-blue-700 {
+  color: rgb(15 118 110) !important; /* teal-600 */
+}
+
+.theme-ocean .text-blue-800 {
+  color: rgb(13 94 88) !important; /* teal-700 */
+}
+
+.theme-ocean .hover\:text-blue-800:hover {
+  color: rgb(13 94 88) !important; /* teal-700 */
+}
+
+.theme-ocean .bg-blue-50 {
+  background-color: rgb(240 253 250) !important; /* teal-50 */
+}
+
+.theme-ocean .bg-blue-100 {
+  background-color: rgb(204 251 241) !important; /* teal-100 */
+}
+
+/* Ocean Theme - Weitere UI-Elemente */
+.theme-ocean .bg-slate-200 {
+  background-color: rgb(45 212 191) !important; /* teal-400 */
+}
+
+.theme-ocean .hover\:bg-slate-300:hover {
+  background-color: rgb(20 184 166) !important; /* teal-500 */
+}
+
+.theme-ocean .text-slate-700 {
+  color: rgb(13 94 88) !important; /* teal-700 */
+}
+
+.theme-ocean .bg-white {
+  background-color: rgb(240 253 250) !important; /* teal-50 */
+}
+
+.theme-ocean .border-slate-200 {
+  border-color: rgb(45 212 191) !important; /* teal-400 */
+}
+
+.theme-ocean .bg-slate-50 {
+  background-color: rgb(240 253 250) !important; /* teal-50 */
+}
+
+.theme-ocean .bg-green-500 {
+  background-color: rgb(20 184 166) !important; /* teal-500 */
+}
+
+.theme-ocean .hover\:bg-green-600:hover {
+  background-color: rgb(15 118 110) !important; /* teal-600 */
+}
+
+/* Forest/Green Theme - Komplettes Design */
+.theme-forest .bg-blue-500 {
+  background-color: rgb(34 197 94) !important; /* green-500 */
+}
+
+.theme-forest .hover\:bg-blue-600:hover {
+  background-color: rgb(22 163 74) !important; /* green-600 */
+}
+
+.theme-forest .text-blue-600 {
+  color: rgb(34 197 94) !important; /* green-500 */
+}
+
+.theme-forest .text-blue-700 {
+  color: rgb(22 163 74) !important; /* green-600 */
+}
+
+.theme-forest .text-blue-800 {
+  color: rgb(21 128 61) !important; /* green-700 */
+}
+
+.theme-forest .hover\:text-blue-800:hover {
+  color: rgb(21 128 61) !important; /* green-700 */
+}
+
+.theme-forest .bg-blue-50 {
+  background-color: rgb(240 253 244) !important; /* green-50 */
+}
+
+.theme-forest .bg-blue-100 {
+  background-color: rgb(220 252 231) !important; /* green-100 */
+}
+
+/* Forest Theme - Weitere UI-Elemente */
+.theme-forest .bg-slate-200 {
+  background-color: rgb(74 222 128) !important; /* green-400 */
+}
+
+.theme-forest .hover\:bg-slate-300:hover {
+  background-color: rgb(34 197 94) !important; /* green-500 */
+}
+
+.theme-forest .text-slate-700 {
+  color: rgb(21 128 61) !important; /* green-700 */
+}
+
+.theme-forest .bg-white {
+  background-color: rgb(240 253 244) !important; /* green-50 */
+}
+
+.theme-forest .border-slate-200 {
+  border-color: rgb(74 222 128) !important; /* green-400 */
+}
+
+.theme-forest .bg-slate-50 {
+  background-color: rgb(240 253 244) !important; /* green-50 */
+}
+
+.theme-forest .bg-green-500 {
+  background-color: rgb(34 197 94) !important; /* green-500 */
+}
+
+.theme-forest .hover\:bg-green-600:hover {
+  background-color: rgb(22 163 74) !important; /* green-600 */
+}
+
+/* Midnight Blue Theme - Komplettes Design */
+.theme-midnight .bg-blue-500 {
+  background-color: rgb(67 56 202) !important; /* indigo-600 */
+}
+
+.theme-midnight .hover\:bg-blue-600:hover {
+  background-color: rgb(55 48 163) !important; /* indigo-700 */
+}
+
+.theme-midnight .text-blue-600 {
+  color: rgb(67 56 202) !important; /* indigo-600 */
+}
+
+.theme-midnight .text-blue-700 {
+  color: rgb(55 48 163) !important; /* indigo-700 */
+}
+
+.theme-midnight .text-blue-800 {
+  color: rgb(49 46 129) !important; /* indigo-800 */
+}
+
+.theme-midnight .hover\:text-blue-800:hover {
+  color: rgb(49 46 129) !important; /* indigo-800 */
+}
+
+.theme-midnight .bg-blue-50 {
+  background-color: rgb(238 242 255) !important; /* indigo-50 */
+}
+
+.theme-midnight .bg-blue-100 {
+  background-color: rgb(224 231 255) !important; /* indigo-100 */
+}
+
+/* Midnight Theme - Weitere UI-Elemente */
+.theme-midnight .bg-slate-200 {
+  background-color: rgb(99 102 241) !important; /* indigo-500 */
+}
+
+.theme-midnight .hover\:bg-slate-300:hover {
+  background-color: rgb(67 56 202) !important; /* indigo-600 */
+}
+
+.theme-midnight .text-slate-700 {
+  color: rgb(49 46 129) !important; /* indigo-800 */
+}
+
+.theme-midnight .bg-white {
+  background-color: rgb(238 242 255) !important; /* indigo-50 */
+}
+
+.theme-midnight .border-slate-200 {
+  border-color: rgb(99 102 241) !important; /* indigo-500 */
+}
+
+.theme-midnight .bg-slate-50 {
+  background-color: rgb(238 242 255) !important; /* indigo-50 */
+}
+
+.theme-midnight .bg-green-500 {
+  background-color: rgb(67 56 202) !important; /* indigo-600 */
+}
+
+.theme-midnight .hover\:bg-green-600:hover {
+  background-color: rgb(55 48 163) !important; /* indigo-700 */
+}

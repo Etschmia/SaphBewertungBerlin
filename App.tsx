@@ -599,9 +599,9 @@ const App: React.FC = () => {
                         <h3 className="text-2xl font-semibold">Willkommen!</h3>
                         <p className="mt-2">
                           Dieses Tool unterstützt die Bewertung in der Schulanfangsphase (Saph) im Land Berlin, 
-                          entsprechend den Vorgaben des Dokuments 
-                          <p className="font-semibold">Schul Z 101 Zeugnis der Schulanfangsphase indikatorenorientiert (Version 01.25)</p>.
-                        </p>
+                          entsprechend den Vorgaben des Dokuments </p>
+                          <p className="font-semibold">Schul Z 101 Zeugnis der Schulanfangsphase indikatorenorientiert (Version 01.25)</p>
+                        
                         <p className="mt-2">Fügen Sie einen Schüler hinzu, um mit der Bewertung zu beginnen.</p>                        
                         <p className="mt-2">Bewerten Sie Ihre Schüler das ganze Schuljahr hindurch und betrachten Sie vor dem Zeugnis die Entwicklung Ihrer Schüler.</p>
                         <p className="font-bold text-green-700 mt-2">
