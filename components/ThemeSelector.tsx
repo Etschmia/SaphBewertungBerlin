@@ -183,16 +183,16 @@ const ThemeSelector: React.FC = () => {
 
   return (
     <div className="flex gap-1">
-      {/* Dark Mode Toggle - Kompakt */}
+      {/* Dark Mode Toggle - Extra Kompakt */}
       <button
         onClick={handleDarkModeToggle}
-        className="flex items-center justify-center w-10 h-10 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+        className="flex items-center justify-center w-8 h-8 bg-slate-200 text-slate-700 rounded-md hover:bg-slate-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
         title={themeState.isDark ? 'Zu Hell wechseln' : 'Zu Dunkel wechseln'}
       >
         {themeState.isDark ? (
-          <MoonIcon className="w-5 h-5" />
+          <MoonIcon className="w-4 h-4" />
         ) : (
-          <SunIcon className="w-5 h-5" />
+          <SunIcon className="w-4 h-4" />
         )}
       </button>
 
@@ -200,7 +200,7 @@ const ThemeSelector: React.FC = () => {
       <div className="relative" ref={colorThemeRef}>
         <button
           onClick={() => setIsColorThemeOpen(!isColorThemeOpen)}
-          className="flex items-center gap-1 bg-slate-200 text-slate-700 text-sm py-2 px-3 rounded-lg hover:bg-slate-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+          className="flex items-center gap-1 bg-slate-200 text-slate-700 text-sm h-8 px-2 rounded-md hover:bg-slate-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
           title="Farbtheme auswählen"
         >
           <div className={`w-3 h-3 rounded-full ${getThemePreviewColor(themeState.colorTheme)}`}></div>
@@ -231,7 +231,7 @@ const ThemeSelector: React.FC = () => {
       <div className="relative" ref={completeThemeRef}>
         <button
           onClick={() => setIsCompleteThemeOpen(!isCompleteThemeOpen)}
-          className="flex items-center gap-1 bg-slate-200 text-slate-700 text-sm py-2 px-3 rounded-lg hover:bg-slate-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+          className="flex items-center gap-1 bg-slate-200 text-slate-700 text-sm h-8 px-2 rounded-md hover:bg-slate-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
           title="Komplettes Theme auswählen"
         >
           <div className={`w-3 h-3 rounded-full ${getCompleteThemePreviewColor(themeState.completeTheme)}`}></div>
