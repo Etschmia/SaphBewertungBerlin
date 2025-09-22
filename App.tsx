@@ -559,7 +559,9 @@ const App: React.FC = () => {
             <h2 className="text-xl font-semibold dark:text-gray-100">
               Bewertung für: <span className="text-blue-600 dark:text-blue-400">{selectedStudent?.name || "Kein Schüler ausgewählt"}</span>
             </h2>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <ThemeSelector />
+              <div className="h-8 w-px bg-slate-300 dark:bg-gray-600"></div>
               <button onClick={handleExportJson} className="flex items-center gap-2 bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600" title="Daten als JSON speichern">
                   <ArrowDownTrayIcon /> Speichern
               </button>
@@ -573,7 +575,6 @@ const App: React.FC = () => {
                 className="flex items-center gap-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed dark:disabled:bg-gray-600" title="Bewertung als PDF exportieren">
                   <DocumentArrowDownIcon /> PDF Export
               </button>
-              <ThemeSelector />
               <ExtrasDropdown 
                 onUpdate={handleUpdate}
                 onInstallApp={handleInstallApp}
