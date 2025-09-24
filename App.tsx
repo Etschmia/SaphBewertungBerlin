@@ -578,7 +578,7 @@ const App: React.FC = () => {
               <button 
                 onClick={handleExportPdf} 
                 disabled={!selectedStudent}
-                className="flex items-center gap-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed dark:disabled:bg-gray-600" title="Bewertung als PDF exportieren">
+                className="flex items-center gap-2 bg-green-400 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed dark:disabled:bg-gray-600" title="Bewertung als PDF exportieren">
                   <DocumentArrowDownIcon /> PDF Export
               </button>
               <ExtrasDropdown 
