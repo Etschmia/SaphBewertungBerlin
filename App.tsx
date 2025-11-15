@@ -15,6 +15,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { generatePdf } from './services/pdfGenerator';
 import { useUpdateService, installPWA } from './services/updateService';
 import { PlusIcon, ArrowDownTrayIcon, ArrowUpTrayIcon, DocumentArrowDownIcon } from './components/Icons';
+import { Analytics } from "@vercel/analytics/react";
 import packageJson from './package.json';
 
 const App: React.FC = () => {
@@ -656,6 +657,7 @@ const App: React.FC = () => {
             onClose={() => setShowUsageModal(false)}
           />
         </ErrorBoundary>
+        <Analytics />
       </div>
     </ErrorBoundary>
   );
