@@ -1,8 +1,13 @@
+/**
+ * App.tsx - Main Application Component
+ * 
+ * Integrated with ClassManager for multi-class support.
+ * Requirements: 1.1, 3.2, 3.3, 4.1, 5.1
+ */
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { initialSubjects } from './data/initialData';
-import type { Student, Subject, AppState, Rating, Category, Competency, RatingEntry, LegacyAssessments, ModernAssessments, AssessmentData } from './types';
-import { isLegacyFormat, migrateLegacyAssessments } from './types';
+import type { Student, Subject, Rating, Competency, RatingEntry, AllClassesExport, AppState } from './types';
 import { sanitizeStudent, validateAssessmentData, ValidationError, DataMigrationError } from './utils/validation';
 import StudentList from './components/StudentList';
 import AssessmentForm from './components/AssessmentForm';
@@ -12,38 +17,68 @@ import AboutModal from './components/AboutModal';
 import UpdateInfoModal from './components/UpdateInfoModal';
 import UsageModal from './components/UsageModal';
 import ErrorBoundary from './components/ErrorBoundary';
+import ClassButton from './components/ClassButton';
+import ClassModal from './components/ClassModal';
+import SaveDropdown from './components/SaveDropdown';
+import LoadDropdown from './components/LoadDropdown';
+import { ClassProvider, useClass } from './contexts/ClassContext';
+import { generateFileName, detectFormat } from './services/classManager';
 import { generatePdf } from './services/pdfGenerator';
 import { useUpdateService, installPWA } from './services/updateService';
-import { PlusIcon, ArrowDownTrayIcon, ArrowUpTrayIcon, DocumentArrowDownIcon } from './components/Icons';
+import { PlusIcon, DocumentArrowDownIcon } from './components/Icons';
 import { Analytics } from "@vercel/analytics/react";
 import packageJson from './package.json';
 
-const App: React.FC = () => {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [subjects, setSubjects] = useState<Subject[]>(initialSubjects);
+/**
+ * Inner App component that uses the ClassContext.
+ * Separated to allow useClass hook usage within ClassProvider.
+ */
+const AppContent: React.FC = () => {
+  // Class context for multi-class management
+  const {
+    currentClassId,
+    currentClassName,
+    classes,
+    hasClasses,
+    students,
+    subjects,
+    createClass,
+    switchToClass,
+    updateStudents,
+    updateSubjects,
+    hasUnassignedStudents,
+    classManager,
+  } = useClass();
+
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [showUsageModal, setShowUsageModal] = useState(false);
+  const [showClassModal, setShowClassModal] = useState(false);
   const [updateInfoStatus, setUpdateInfoStatus] = useState<'success' | 'fail' | 'unchanged'>('unchanged');
   const [updateBuildInfo, setUpdateBuildInfo] = useState<any>(null);
   const [isUpdateInfoModalOpen, setIsUpdateInfoModalOpen] = useState(false);
 
+  // Set initial selected student when students change
+  useEffect(() => {
+    if (students.length > 0 && !students.find(s => s.id === selectedStudentId)) {
+      setSelectedStudentId(students[0].id);
+    } else if (students.length === 0) {
+      setSelectedStudentId(null);
+    }
+  }, [students, selectedStudentId]);
+
   // Enhanced migration function with comprehensive error handling
   const migrateStudentData = useCallback((student: any, index?: number): Student => {
     try {
-      // Use the sanitization utility which handles all edge cases
       const sanitized = sanitizeStudent(student, index);
       if (!sanitized) {
         throw new DataMigrationError('Failed to sanitize student data', student);
       }
       
-      // Additional validation for assessments if they exist
       if (sanitized.assessments && typeof sanitized.assessments === 'object') {
         const validation = validateAssessmentData(sanitized.assessments);
         if (!validation.isValid) {
           console.warn(`Assessment validation warnings for student ${sanitized.name}:`, validation.errors);
-          // Continue with sanitized data even if there are warnings
         }
       }
       
@@ -51,7 +86,6 @@ const App: React.FC = () => {
     } catch (error) {
       console.error('Error migrating student data:', error, student);
       
-      // Create a fallback student with safe defaults
       return {
         id: `student-fallback-${Date.now()}-${index || 0}`,
         name: `Schüler ${(index || 0) + 1} (Wiederhergestellt)`,
@@ -59,120 +93,6 @@ const App: React.FC = () => {
       };
     }
   }, []);
-
-
-  useEffect(() => {
-    try {
-      const savedState = localStorage.getItem('zeugnis-assistent-state');
-      if (savedState) {
-        let parsedState: any;
-        
-        try {
-          parsedState = JSON.parse(savedState);
-        } catch (parseError) {
-          console.error("JSON parsing error for saved state:", parseError);
-          throw new ValidationError('Invalid JSON in localStorage');
-        }
-        
-        // Validate basic structure
-        if (!parsedState || typeof parsedState !== 'object') {
-          throw new ValidationError('Invalid state structure in localStorage');
-        }
-        
-        // Migrate students data with enhanced error handling
-        let migratedStudents: Student[] = [];
-        if (parsedState.students && Array.isArray(parsedState.students)) {
-          const migrationErrors: string[] = [];
-          
-          migratedStudents = parsedState.students
-            .map((student: any, index: number) => {
-              try {
-                return migrateStudentData(student, index);
-              } catch (error) {
-                const errorMsg = `Student ${index}: ${error instanceof Error ? error.message : 'Unknown error'}`;
-                migrationErrors.push(errorMsg);
-                console.error('Student migration error:', errorMsg, student);
-                return null;
-              }
-            })
-            .filter((student: Student | null): student is Student => student !== null);
-          
-          if (migrationErrors.length > 0) {
-            console.warn('Student migration completed with errors:', migrationErrors);
-            // Could show a user notification here if needed
-          }
-          
-          console.log(`Successfully migrated ${migratedStudents.length} students`);
-        }
-        
-        setStudents(migratedStudents);
-        
-        // Validate and set subjects
-        if (parsedState.subjects && Array.isArray(parsedState.subjects)) {
-          // Basic validation for subjects structure
-          const validSubjects = parsedState.subjects.filter((subject: any) => {
-            return subject && 
-                   typeof subject === 'object' && 
-                   subject.id && 
-                   typeof subject.id === 'string' &&
-                   subject.name && 
-                   typeof subject.name === 'string' &&
-                   Array.isArray(subject.categories);
-          });
-          
-          if (validSubjects.length > 0) {
-            setSubjects(validSubjects);
-          } else {
-            console.warn('No valid subjects found, using initial subjects');
-            setSubjects(initialSubjects);
-          }
-        } else {
-          setSubjects(initialSubjects);
-        }
-        
-        // Set selected student safely
-        if (migratedStudents.length > 0) {
-          setSelectedStudentId(migratedStudents[0].id);
-        }
-      }
-    } catch (error) {
-      console.error("Fehler beim Laden der Daten aus dem LocalStorage:", error);
-      
-      // Show user-friendly error message
-      const errorMessage = error instanceof ValidationError 
-        ? `Datenvalidierungsfehler: ${error.message}`
-        : 'Unbekannter Fehler beim Laden der Daten';
-      
-      // Could show a toast notification here
-      console.warn('Resetting to initial state due to error:', errorMessage);
-      
-      // Reset to safe initial state
-      setStudents([]);
-      setSubjects(initialSubjects);
-      setSelectedStudentId(null);
-      
-      // Clear corrupted localStorage data
-      try {
-        localStorage.removeItem('zeugnis-assistent-state');
-      } catch (clearError) {
-        console.error('Failed to clear corrupted localStorage:', clearError);
-      }
-    }
-    setIsDataLoaded(true);
-  }, [migrateStudentData]);
-
-  useEffect(() => {
-    if (isDataLoaded) {
-      try {
-        const stateToSave: AppState = { students, subjects };
-        localStorage.setItem('zeugnis-assistent-state', JSON.stringify(stateToSave));
-      } catch (error) {
-        console.error("Fehler beim Speichern der Daten im LocalStorage:", error);
-      }
-    }
-  }, [students, subjects, isDataLoaded]);
-
-
 
   const addStudent = () => {
     const name = prompt("Bitte geben Sie den Vornamen des Schülers ein (z.B. Max M.):");
@@ -183,7 +103,7 @@ const App: React.FC = () => {
         assessments: {},
       };
       const newStudents = [...students, newStudent];
-      setStudents(newStudents);
+      updateStudents(newStudents);
       setSelectedStudentId(newStudent.id);
     }
   };
@@ -191,7 +111,7 @@ const App: React.FC = () => {
   const deleteStudent = (studentId: string) => {
     if (window.confirm("Möchten Sie diesen Schüler wirklich löschen? Alle Bewertungen gehen verloren.")) {
       const updatedStudents = students.filter(s => s.id !== studentId);
-      setStudents(updatedStudents);
+      updateStudents(updatedStudents);
       if (selectedStudentId === studentId) {
         setSelectedStudentId(updatedStudents.length > 0 ? updatedStudents[0].id : null);
       }
@@ -205,7 +125,6 @@ const App: React.FC = () => {
     }
 
     try {
-      // Validate inputs
       if (!competencyId || typeof competencyId !== 'string' || competencyId.trim() === '') {
         throw new ValidationError('Invalid competency ID');
       }
@@ -219,40 +138,38 @@ const App: React.FC = () => {
         timestamp: Date.now()
       };
 
-      setStudents(prevStudents =>
-        prevStudents.map(student => {
-          if (student.id !== selectedStudentId) return student;
+      const updatedStudents = students.map(student => {
+        if (student.id !== selectedStudentId) return student;
+        
+        try {
+          const existingEntries = student.assessments[competencyId] || [];
           
-          try {
-            const existingEntries = student.assessments[competencyId] || [];
-            
-            // Validate existing entries before adding new one
-            const validExistingEntries = existingEntries.filter(entry => {
-              return entry && 
-                     typeof entry === 'object' && 
-                     typeof entry.rating === 'number' && 
-                     typeof entry.timestamp === 'number' &&
-                     entry.timestamp > 0;
-            });
-            
-            return {
-              ...student,
-              assessments: {
-                ...student.assessments,
-                [competencyId]: [...validExistingEntries, newEntry],
-              },
-            };
-          } catch (error) {
-            console.error('Error updating student assessments:', error);
-            return student; // Return unchanged student on error
-          }
-        })
-      );
+          const validExistingEntries = existingEntries.filter((entry: RatingEntry) => {
+            return entry && 
+                   typeof entry === 'object' && 
+                   typeof entry.rating === 'number' && 
+                   typeof entry.timestamp === 'number' &&
+                   entry.timestamp > 0;
+          });
+          
+          return {
+            ...student,
+            assessments: {
+              ...student.assessments,
+              [competencyId]: [...validExistingEntries, newEntry],
+            },
+          };
+        } catch (error) {
+          console.error('Error updating student assessments:', error);
+          return student;
+        }
+      });
+
+      updateStudents(updatedStudents);
     } catch (error) {
       console.error('Error in handleAssessmentAdd:', error);
-      // Could show user notification here
     }
-  }, [selectedStudentId]);
+  }, [selectedStudentId, students, updateStudents]);
 
   const handleAssessmentDelete = useCallback((competencyId: string, rating: Rating, timestamp: number) => {
     if (!selectedStudentId) {
@@ -261,7 +178,6 @@ const App: React.FC = () => {
     }
 
     try {
-      // Validate inputs
       if (!competencyId || typeof competencyId !== 'string' || competencyId.trim() === '') {
         throw new ValidationError('Invalid competency ID');
       }
@@ -274,240 +190,217 @@ const App: React.FC = () => {
         throw new ValidationError('Invalid timestamp');
       }
 
-      setStudents(prevStudents =>
-        prevStudents.map(student => {
-          if (student.id !== selectedStudentId) return student;
+      const updatedStudents = students.map(student => {
+        if (student.id !== selectedStudentId) return student;
+        
+        try {
+          const existingEntries = student.assessments[competencyId] || [];
           
-          try {
-            const existingEntries = student.assessments[competencyId] || [];
+          const filteredEntries = existingEntries.filter((entry: RatingEntry) => {
+            if (!entry || typeof entry !== 'object') return false;
+            if (typeof entry.rating !== 'number' || typeof entry.timestamp !== 'number') return false;
             
-            // Filter out the specific entry and validate remaining entries
-            const filteredEntries = existingEntries.filter(entry => {
-              // Validate entry structure
-              if (!entry || typeof entry !== 'object') return false;
-              if (typeof entry.rating !== 'number' || typeof entry.timestamp !== 'number') return false;
-              
-              // Keep entries that don't match the deletion criteria
-              return !(entry.rating === rating && entry.timestamp === timestamp);
-            });
-            
-            return {
-              ...student,
-              assessments: {
-                ...student.assessments,
-                [competencyId]: filteredEntries,
-              },
-            };
-          } catch (error) {
-            console.error('Error filtering student assessments:', error);
-            return student; // Return unchanged student on error
-          }
-        })
-      );
+            return !(entry.rating === rating && entry.timestamp === timestamp);
+          });
+          
+          return {
+            ...student,
+            assessments: {
+              ...student.assessments,
+              [competencyId]: filteredEntries,
+            },
+          };
+        } catch (error) {
+          console.error('Error filtering student assessments:', error);
+          return student;
+        }
+      });
+
+      updateStudents(updatedStudents);
     } catch (error) {
       console.error('Error in handleAssessmentDelete:', error);
-      // Could show user notification here
     }
-  }, [selectedStudentId]);
+  }, [selectedStudentId, students, updateStudents]);
   
   const handleCompetencyTextChange = (subjectId: string, categoryId: string, competencyId: string, newText: string) => {
-    setSubjects(prevSubjects => prevSubjects.map(subject => {
-        if(subject.id !== subjectId) return subject;
-        return {
-            ...subject,
-            categories: subject.categories.map(category => {
-                if(category.id !== categoryId) return category;
-                return {
-                    ...category,
-                    competencies: category.competencies.map(comp => 
-                        comp.id === competencyId ? {...comp, text: newText} : comp
-                    )
-                }
-            })
-        }
-    }));
+    const updatedSubjects = subjects.map(subject => {
+      if(subject.id !== subjectId) return subject;
+      return {
+        ...subject,
+        categories: subject.categories.map(category => {
+          if(category.id !== categoryId) return category;
+          return {
+            ...category,
+            competencies: category.competencies.map(comp => 
+              comp.id === competencyId ? {...comp, text: newText} : comp
+            )
+          }
+        })
+      }
+    });
+    updateSubjects(updatedSubjects);
   };
   
   const handleCategoryNameChange = (subjectId: string, categoryId: string, newName: string) => {
-    setSubjects(prevSubjects => prevSubjects.map(subject => {
-        if(subject.id !== subjectId) return subject;
-        return {
-            ...subject,
-            categories: subject.categories.map(category => 
-                category.id === categoryId ? {...category, name: newName} : category
-            )
-        }
-    }));
+    const updatedSubjects = subjects.map(subject => {
+      if(subject.id !== subjectId) return subject;
+      return {
+        ...subject,
+        categories: subject.categories.map(category => 
+          category.id === categoryId ? {...category, name: newName} : category
+        )
+      }
+    });
+    updateSubjects(updatedSubjects);
   };
 
   const addCompetency = (subjectId: string, categoryId: string) => {
     const text = prompt("Text für die neue Kompetenz:");
     if (text) {
-        const newCompetency: Competency = { id: `comp-${Date.now()}`, text };
-        setSubjects(prevSubjects => prevSubjects.map(subject => {
-            if (subject.id !== subjectId) return subject;
+      const newCompetency: Competency = { id: `comp-${Date.now()}`, text };
+      const updatedSubjects = subjects.map(subject => {
+        if (subject.id !== subjectId) return subject;
+        return {
+          ...subject,
+          categories: subject.categories.map(category => {
+            if (category.id !== categoryId) return category;
             return {
-                ...subject,
-                categories: subject.categories.map(category => {
-                    if (category.id !== categoryId) return category;
-                    return {
-                        ...category,
-                        competencies: [...category.competencies, newCompetency]
-                    }
-                })
+              ...category,
+              competencies: [...category.competencies, newCompetency]
             }
-        }));
+          })
+        }
+      });
+      updateSubjects(updatedSubjects);
     }
   };
 
-  const handleExportJson = () => {
+  /**
+   * Handles saving class data via SaveDropdown.
+   * Requirements: 4.1, 4.5, 4.6, 4.7
+   */
+  const handleSaveClass = useCallback((classId: string | 'unassigned' | 'all') => {
     try {
-      const state: AppState = { students, subjects };
-      
-      // Validate that we have data to export
-      if (!students || students.length === 0) {
-        alert("Keine Schülerdaten zum Exportieren vorhanden.");
-        return;
+      let exportData: any;
+      let fileName: string;
+
+      if (classId === 'all') {
+        // Export all classes (Requirements 4.7)
+        exportData = classManager.exportAllClasses();
+        fileName = generateFileName('all');
+      } else {
+        // Export single class or unassigned (Requirements 4.5, 4.6)
+        const appState = classManager.exportClass(classId);
+        exportData = {
+          version: "2.0",
+          exportDate: new Date().toISOString(),
+          ...appState
+        };
+        
+        if (classId === 'unassigned') {
+          fileName = generateFileName('unassigned');
+        } else {
+          const classData = classManager.getClass(classId);
+          fileName = generateFileName(classId, classData?.name);
+        }
       }
-      
-      // Create JSON with metadata for version tracking
-      const exportData = {
-        version: "2.0", // Version to track data format
-        exportDate: new Date().toISOString(),
-        ...state
-      };
-      
+
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
       const downloadAnchorNode = document.createElement('a');
       downloadAnchorNode.setAttribute("href", dataStr);
-      
-      // Erstelle Dateiname mit "BewertungSaph" und aktuellem Datum/Uhrzeit
-      const now = new Date();
-      const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
-      const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-MM-SS
-      downloadAnchorNode.setAttribute("download", `BewertungSaph_${dateStr}_${timeStr}.json`);
+      downloadAnchorNode.setAttribute("download", fileName);
       
       document.body.appendChild(downloadAnchorNode);
       downloadAnchorNode.click();
       downloadAnchorNode.remove();
       
-      console.log("JSON export successful:", exportData);
+      console.log("JSON export successful:", { classId, fileName });
     } catch (error) {
       console.error("Fehler beim JSON-Export:", error);
       alert("Fehler beim Exportieren der Daten. Bitte versuchen Sie es erneut.");
     }
-  };
+  }, [classManager]);
 
-  const handleImportJson = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const fileReader = new FileReader();
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      
-      // Validate file type
-      if (!file.name.toLowerCase().endsWith('.json')) {
-        alert("Bitte wählen Sie eine gültige JSON-Datei aus.");
-        return;
-      }
-      
-      // Validate file size (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        alert("Die Datei ist zu groß. Maximale Dateigröße: 10MB.");
-        return;
-      }
-      
-      fileReader.readAsText(file, "UTF-8");
-      fileReader.onload = e => {
-        if (e.target?.result) {
+  /**
+   * Handles loading class data via LoadDropdown.
+   * Requirements: 5.1, 5.6, 5.7, 6.1, 6.4
+   */
+  const handleLoadToClass = useCallback((
+    classId: string | 'unassigned' | 'all',
+    fileData: unknown,
+    format: 'legacy' | 'multi-class'
+  ) => {
+    try {
+      if (format === 'multi-class') {
+        // Import all classes (Requirements 6.4)
+        classManager.importAllClasses(fileData as AllClassesExport);
+        
+        // Refresh the context state
+        const allClasses = classManager.getAllClasses();
+        const studentCount = allClasses.reduce((sum, c) => sum + c.students.length, 0);
+        alert(`Alle Klassen erfolgreich importiert!\n${allClasses.length} Klassen mit insgesamt ${studentCount} Schülern wurden geladen.`);
+      } else {
+        // Import legacy format to specific class (Requirements 5.6, 5.7, 7.2)
+        const appState = fileData as AppState;
+        
+        // Migrate students if needed
+        const migratedStudents = appState.students.map((student: any, index: number) => {
           try {
-            const importedData: any = JSON.parse(e.target.result as string);
-            
-            // Handle both new format (with version) and legacy format
-            let newState: any;
-            if (importedData.version) {
-              // New format with metadata
-              console.log(`Importing data version: ${importedData.version}`);
-              newState = {
-                students: importedData.students,
-                subjects: importedData.subjects
-              };
-            } else {
-              // Legacy format or direct AppState
-              newState = importedData;
-            }
-            
-            // Validate required fields
-            if (!newState.students || !Array.isArray(newState.students)) {
-              throw new Error("Ungültige Datenstruktur: 'students' Array fehlt oder ist ungültig.");
-            }
-            
-            if (!newState.subjects || !Array.isArray(newState.subjects)) {
-              throw new Error("Ungültige Datenstruktur: 'subjects' Array fehlt oder ist ungültig.");
-            }
-            
-            // Migrate imported students data if necessary
-            const migratedStudents = newState.students.map((student: any, index: number) => {
-              try {
-                return migrateStudentData(student);
-              } catch (migrationError) {
-                console.warn(`Migration warning for student ${index}:`, migrationError);
-                // Return a fallback student if migration fails
-                return {
-                  id: student.id || `student-${Date.now()}-${index}`,
-                  name: student.name || `Schüler ${index + 1}`,
-                  assessments: {}
-                };
-              }
-            });
-            
-            // Validate subjects structure
-            const validatedSubjects = newState.subjects.filter((subject: any) => {
-              return subject && subject.id && subject.name && Array.isArray(subject.categories);
-            });
-            
-            if (validatedSubjects.length === 0) {
-              throw new Error("Keine gültigen Fächer in den importierten Daten gefunden.");
-            }
-            
-            // Apply imported data
-            setStudents(migratedStudents);
-            setSubjects(validatedSubjects);
-            setSelectedStudentId(migratedStudents[0]?.id || null);
-            
-            // Show success message with details
-            const studentCount = migratedStudents.length;
-            const subjectCount = validatedSubjects.length;
-            alert(`Daten erfolgreich importiert!\n${studentCount} Schüler und ${subjectCount} Fächer wurden geladen.`);
-            
-            console.log("Import successful:", {
-              students: migratedStudents.length,
-              subjects: validatedSubjects.length,
-              version: importedData.version || "legacy"
-            });
-            
-          } catch(err) {
-            const errorMessage = err instanceof Error ? err.message : "Unbekannter Fehler";
-            alert(`Fehler beim Importieren der Datei: ${errorMessage}\n\nStellen Sie sicher, dass es eine gültige JSON-Datei mit Zeugnis-Daten ist.`);
-            console.error("Import error:", err);
+            return migrateStudentData(student, index);
+          } catch (migrationError) {
+            console.warn(`Migration warning for student ${index}:`, migrationError);
+            return {
+              id: student.id || `student-${Date.now()}-${index}`,
+              name: student.name || `Schüler ${index + 1}`,
+              assessments: {}
+            };
           }
-        }
-      };
+        });
+
+        const migratedData: AppState = {
+          students: migratedStudents,
+          subjects: appState.subjects || initialSubjects
+        };
+
+        classManager.importToClass(migratedData, classId === 'all' ? 'unassigned' : classId);
+        
+        const studentCount = migratedStudents.length;
+        const targetName = classId === 'unassigned' ? 'Ohne Klasse' : 
+          classManager.getClass(classId as string)?.name || 'Klasse';
+        alert(`Daten erfolgreich in "${targetName}" importiert!\n${studentCount} Schüler wurden geladen.`);
+      }
+
+      // Force refresh by reloading from ClassManager
+      classManager.load();
       
-      fileReader.onerror = () => {
-        alert("Fehler beim Lesen der Datei. Bitte versuchen Sie es erneut.");
-        console.error("FileReader error");
-      };
+      // Trigger a re-render by updating the window
+      window.location.reload();
+    } catch (error) {
+      console.error("Fehler beim Import:", error);
+      alert("Fehler beim Importieren der Daten. Bitte überprüfen Sie das Dateiformat.");
     }
-    
-    // Reset file input to allow importing the same file again
-    event.target.value = '';
-  };
+  }, [classManager, migrateStudentData]);
+
+  /**
+   * Handles creating a new class from ClassModal.
+   */
+  const handleCreateClass = useCallback((name: string, copyCurrentStudents: boolean) => {
+    createClass(name, copyCurrentStudents);
+  }, [createClass]);
+
+  /**
+   * Handles switching to a class from ClassModal.
+   */
+  const handleSwitchToClass = useCallback((classId: string | null) => {
+    switchToClass(classId);
+  }, [switchToClass]);
 
   const handleExportPdf = () => {
     const student = students.find(s => s.id === selectedStudentId);
     if(student) {
-        generatePdf(student, subjects);
+      generatePdf(student, subjects);
     } else {
-        alert("Bitte wählen Sie einen Schüler für den PDF-Export aus.");
+      alert("Bitte wählen Sie einen Schüler für den PDF-Export aus.");
     }
   };
 
@@ -516,11 +409,6 @@ const App: React.FC = () => {
     setUpdateBuildInfo,
     setIsUpdateInfoModalOpen,
   });
-
-  const handleInstallApp = async () => {
-    const result = await installPWA();
-    alert(result);
-  };
 
   const handleAbout = () => {
     setShowAboutModal(true);
@@ -550,14 +438,21 @@ const App: React.FC = () => {
               />
             </ErrorBoundary>
           </div>
-          <div className="p-4 border-t border-slate-200 dark:border-gray-700">
-            <button
-              onClick={addStudent}
-              className="w-full flex items-center justify-center gap-2 bg-blue-500 dark:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
-            >
-              <PlusIcon />
-              Schüler hinzufügen
-            </button>
+          <div className="p-4 border-t border-slate-200 dark:border-gray-700 space-y-2">
+            {/* ClassButton and "Schüler hinzufügen" in same row - Requirement 1.1, 1.4 */}
+            <div className="flex gap-2">
+              <ClassButton
+                currentClassName={currentClassName}
+                onClick={() => setShowClassModal(true)}
+              />
+              <button
+                onClick={addStudent}
+                className="flex-1 flex items-center justify-center gap-2 bg-blue-500 dark:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
+              >
+                <PlusIcon />
+                Schüler hinzufügen
+              </button>
+            </div>
           </div>
         </aside>
 
@@ -569,13 +464,17 @@ const App: React.FC = () => {
             <div className="flex items-center gap-2">
               <ThemeSelector />
               <div className="h-8 w-px bg-slate-300 dark:bg-gray-600"></div>
-              <button onClick={handleExportJson} className="flex items-center gap-2 bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600" title="Daten als JSON speichern">
-                  <ArrowDownTrayIcon /> Speichern
-              </button>
-              <label className="flex items-center gap-2 bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors cursor-pointer dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600" title="Daten aus JSON laden">
-                  <ArrowUpTrayIcon /> Laden
-                  <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
-              </label>
+              {/* SaveDropdown replaces handleExportJson - Requirements 4.1 */}
+              <SaveDropdown
+                classes={classes}
+                hasUnassigned={hasUnassignedStudents}
+                onSaveClass={handleSaveClass}
+              />
+              {/* LoadDropdown replaces handleImportJson - Requirements 5.1 */}
+              <LoadDropdown
+                classes={classes}
+                onLoadToClass={handleLoadToClass}
+              />
               <button 
                 onClick={handleExportPdf} 
                 disabled={!selectedStudent}
@@ -657,9 +556,34 @@ const App: React.FC = () => {
             onClose={() => setShowUsageModal(false)}
           />
         </ErrorBoundary>
+
+        {/* ClassModal for class management - Requirement 2.1 */}
+        <ErrorBoundary>
+          <ClassModal
+            isOpen={showClassModal}
+            onClose={() => setShowClassModal(false)}
+            classes={classes}
+            currentClassId={currentClassId}
+            onCreateClass={handleCreateClass}
+            onSwitchToClass={handleSwitchToClass}
+          />
+        </ErrorBoundary>
+
         <Analytics />
       </div>
     </ErrorBoundary>
+  );
+};
+
+/**
+ * Main App component wrapped with ClassProvider.
+ * Requirements: 1.1, 3.2, 3.3, 4.1, 5.1
+ */
+const App: React.FC = () => {
+  return (
+    <ClassProvider>
+      <AppContent />
+    </ClassProvider>
   );
 };
 

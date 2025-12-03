@@ -90,19 +90,59 @@ const UsageModal: React.FC<UsageModalProps> = ({ isOpen, onClose }) => {
 
               <div>
                 <h4 className="text-lg font-medium text-slate-700 dark:text-gray-100 mb-2">
-                  6. Daten sichern und laden
+                  6. Klassenverwaltung
                 </h4>
-                <p className="text-slate-600 dark:text-gray-300">
-                  Ihre Daten werden automatisch im Browser gespeichert. Zusätzlich können Sie 
-                  mit "Speichern" eine JSON-Datei erstellen und mit "Laden" wieder einlesen. 
-                  Dies ist besonders wichtig für Backups oder den Wechsel zwischen verschiedenen 
-                  Geräten.
+                <p className="text-slate-600 dark:text-gray-300 mb-3">
+                  Mit der Klassenverwaltung können Sie Schüler in verschiedene Klassen organisieren 
+                  und zwischen diesen wechseln.
                 </p>
+                <ul className="list-disc list-inside text-slate-600 dark:text-gray-300 space-y-2 ml-2">
+                  <li>
+                    <strong>Klasse anlegen:</strong> Klicken Sie auf den Button "Klasse" in der 
+                    Seitenleiste. Im Modal können Sie entweder die aktuelle Schülerliste als neue 
+                    Klasse erfassen oder eine neue leere Klasse anlegen.
+                  </li>
+                  <li>
+                    <strong>Zwischen Klassen wechseln:</strong> Im Klassenmodal sehen Sie alle 
+                    angelegten Klassen. Klicken Sie auf "Zur Klasse wechseln", um die Schülerliste 
+                    dieser Klasse zu laden.
+                  </li>
+                  <li>
+                    <strong>"Ohne Zuordnung":</strong> Schüler, die keiner Klasse zugeordnet sind, 
+                    werden unter "Ohne Zuordnung" angezeigt. Sie können jederzeit dorthin zurückkehren.
+                  </li>
+                </ul>
               </div>
 
               <div>
                 <h4 className="text-lg font-medium text-slate-700 dark:text-gray-100 mb-2">
-                  7. Kompetenzen anpassen
+                  7. Daten sichern und laden
+                </h4>
+                <p className="text-slate-600 dark:text-gray-300 mb-3">
+                  Ihre Daten werden automatisch im Browser gespeichert. Zusätzlich können Sie 
+                  Daten als JSON-Datei exportieren und wieder importieren.
+                </p>
+                <ul className="list-disc list-inside text-slate-600 dark:text-gray-300 space-y-2 ml-2">
+                  <li>
+                    <strong>Einzelne Klasse speichern:</strong> Wenn Klassen existieren, wird der 
+                    Speichern-Button zu einem Dropdown. Wählen Sie eine Klasse aus, um nur deren 
+                    Daten zu exportieren.
+                  </li>
+                  <li>
+                    <strong>Alle Klassen speichern:</strong> Wählen Sie "Alle Klassen" im Dropdown, 
+                    um sämtliche Klassen und Schüler in einer Datei zu sichern.
+                  </li>
+                  <li>
+                    <strong>Daten laden:</strong> Beim Laden können Sie wählen, in welche Klasse 
+                    die Daten importiert werden sollen. Alte JSON-Dateien ohne Klasseninformationen 
+                    werden weiterhin unterstützt.
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="text-lg font-medium text-slate-700 dark:text-gray-100 mb-2">
+                  8. Kompetenzen anpassen
                 </h4>
                 <p className="text-slate-600 dark:text-gray-300">
                   Sie können Kompetenztexte bearbeiten, indem Sie darauf klicken. Neue Kompetenzen 

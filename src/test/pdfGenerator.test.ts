@@ -30,6 +30,18 @@ const findCompetencyRow = (tableBody: any[], competencyText: string) => {
   return competencyRows.find((row: any[]) => row[0].includes(competencyText))
 }
 
+// Helper function to find competency rows that handles both string and object row formats
+const findCompetencyRowSafe = (tableBody: any[], competencyText: string) => {
+  return tableBody.find((row: any) => {
+    if (!Array.isArray(row)) return false
+    const firstCell = row[0]
+    if (typeof firstCell === 'string') {
+      return firstCell.includes(competencyText)
+    }
+    return false
+  })
+}
+
 describe('PDF Generator with Frequency-based Rating Selection', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -115,9 +127,7 @@ describe('PDF Generator with Frequency-based Rating Selection', () => {
       const autoTableCall = mockAutoTable.mock.calls[0][0]
       const tableBody = autoTableCall.body
 
-      const comp1Row = tableBody.find((row: any[]) => 
-        Array.isArray(row) && row[0] && row[0].includes('Kann einfache Wörter lesen')
-      )
+      const comp1Row = findCompetencyRowSafe(tableBody, 'Kann einfache Wörter lesen')
 
       expect(comp1Row[1]).toBe('ausgeprägt') // Proficient (newer timestamp)
     })
@@ -142,9 +152,7 @@ describe('PDF Generator with Frequency-based Rating Selection', () => {
       const autoTableCall = mockAutoTable.mock.calls[0][0]
       const tableBody = autoTableCall.body
 
-      const comp1Row = tableBody.find((row: any[]) => 
-        Array.isArray(row) && row[0] && row[0].includes('Kann einfache Wörter lesen')
-      )
+      const comp1Row = findCompetencyRowSafe(tableBody, 'Kann einfache Wörter lesen')
 
       expect(comp1Row[1]).toBe('ausgeprägt') // Proficient (tie-breaker by timestamp)
     })
@@ -165,12 +173,8 @@ describe('PDF Generator with Frequency-based Rating Selection', () => {
       const autoTableCall = mockAutoTable.mock.calls[0][0]
       const tableBody = autoTableCall.body
 
-      const comp1Row = tableBody.find((row: any[]) => 
-        Array.isArray(row) && row[0] && row[0].includes('Kann einfache Wörter lesen')
-      )
-      const comp2Row = tableBody.find((row: any[]) => 
-        Array.isArray(row) && row[0] && row[0].includes('Kann einfache Sätze lesen')
-      )
+      const comp1Row = findCompetencyRowSafe(tableBody, 'Kann einfache Wörter lesen')
+      const comp2Row = findCompetencyRowSafe(tableBody, 'Kann einfache Sätze lesen')
 
       expect(comp1Row[1]).toBe('nicht vermittelt')
       expect(comp2Row[1]).toBe('nicht vermittelt')
@@ -190,15 +194,9 @@ describe('PDF Generator with Frequency-based Rating Selection', () => {
       const autoTableCall = mockAutoTable.mock.calls[0][0]
       const tableBody = autoTableCall.body
 
-      const comp1Row = tableBody.find((row: any[]) => 
-        Array.isArray(row) && row[0] && row[0].includes('Kann einfache Wörter lesen')
-      )
-      const comp2Row = tableBody.find((row: any[]) => 
-        Array.isArray(row) && row[0] && row[0].includes('Kann einfache Sätze lesen')
-      )
-      const comp3Row = tableBody.find((row: any[]) => 
-        Array.isArray(row) && row[0] && row[0].includes('Kann einfache Wörter schreiben')
-      )
+      const comp1Row = findCompetencyRowSafe(tableBody, 'Kann einfache Wörter lesen')
+      const comp2Row = findCompetencyRowSafe(tableBody, 'Kann einfache Sätze lesen')
+      const comp3Row = findCompetencyRowSafe(tableBody, 'Kann einfache Wörter schreiben')
 
       expect(comp1Row[1]).toBe('nicht vermittelt')
       expect(comp2Row[1]).toBe('nicht vermittelt')
@@ -333,11 +331,10 @@ describe('PDF Generator with Frequency-based Rating Selection', () => {
       const autoTableCall = mockAutoTable.mock.calls[0][0]
       const tableBody = autoTableCall.body
 
-      const comp1Row = tableBody.find((row: any[]) => 
-        Array.isArray(row) && row[0] && row[0].includes('Kann einfache Wörter lesen')
-      )
+      const comp1Row = findCompetencyRowSafe(tableBody, 'Kann einfache Wörter lesen')
 
-      // Should fall back to "nicht vermittelt" for invalid ratings
+      // Invalid ratings are filtered out by getMostFrequentRating, which returns null
+      // pdfGenerator then falls back to Rating.NotTaught
       expect(comp1Row[1]).toBe('nicht vermittelt')
     })
   })
@@ -358,9 +355,7 @@ describe('PDF Generator with Frequency-based Rating Selection', () => {
       const autoTableCall = mockAutoTable.mock.calls[0][0]
       const tableBody = autoTableCall.body
 
-      const comp3Row = tableBody.find((row: any[]) => 
-        Array.isArray(row) && row[0] && row[0].includes('Kann einfache Wörter schreiben')
-      )
+      const comp3Row = findCompetencyRowSafe(tableBody, 'Kann einfache Wörter schreiben')
 
       expect(comp3Row[1]).toBe('sehr ausgeprägt')
     })

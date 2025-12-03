@@ -40,6 +40,65 @@ export interface AppState {
     subjects: Subject[];
 }
 
+// ============================================
+// Class Management Types (Requirements 3.1, 4.7, 7.4)
+// ============================================
+
+/**
+ * Represents a single class with its students and configuration.
+ * Used in the multi-class storage structure.
+ */
+export interface ClassData {
+  id: string;                    // Eindeutige Klassen-ID
+  name: string;                  // Anzeigename der Klasse
+  students: Student[];           // Schülerliste dieser Klasse
+  subjects: Subject[];           // Fächer-Konfiguration
+  lastModified: number;          // Timestamp der letzten Änderung
+}
+
+/**
+ * Multi-class storage structure for LocalStorage.
+ * Supports multiple classes and unassigned students.
+ */
+export interface MultiClassStorage {
+  version: string;               // Format-Version (z.B. "3.0")
+  classes: ClassData[];          // Array aller Klassen
+  unassignedStudents: Student[]; // Schüler ohne Klassenzuordnung
+  unassignedSubjects: Subject[]; // Fächer für unassigned
+  currentClassId: string | null; // ID der aktuell aktiven Klasse
+  lastModified: number;          // Timestamp der letzten Änderung
+}
+
+/**
+ * Export format for "Alle Klassen" (all classes) export.
+ * Contains all classes and unassigned students for full backup.
+ */
+export interface AllClassesExport {
+  version: string;               // "3.0"
+  exportDate: string;            // ISO timestamp
+  classes: ClassData[];
+  unassignedStudents: Student[];
+  unassignedSubjects: Subject[];
+}
+
+/**
+ * LocalStorage keys for class management.
+ */
+export const STORAGE_KEYS = {
+  MULTI_CLASS: 'zeugnis-assistent-multi-class',  // Neue Multi-Class-Struktur
+  LEGACY: 'zeugnis-assistent-state'              // Alter Schlüssel (für Migration)
+} as const;
+
+/**
+ * Type for storage key values.
+ */
+export type StorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS];
+
+/**
+ * Format types for JSON file detection.
+ */
+export type DataFormat = 'legacy' | 'multi-class' | 'invalid';
+
 // Legacy types for backward compatibility
 export type LegacyAssessments = Record<string, Rating>;
 export type ModernAssessments = Record<string, RatingEntry[]>;
