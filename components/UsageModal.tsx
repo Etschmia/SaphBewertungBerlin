@@ -33,56 +33,67 @@ const UsageModal: React.FC<UsageModalProps> = ({ isOpen, onClose }) => {
             <div className="space-y-4">
               <div>
                 <h4 className="text-lg font-medium text-slate-700 dark:text-gray-100 mb-2">
-                  1. Schüler anlegen
+                  1. Schueler anlegen
                 </h4>
                 <p className="text-slate-600 dark:text-gray-300">
-                  Klicken Sie auf den blauen "Schüler hinzufügen" Button in der linken Seitenleiste. 
-                  Geben Sie den Vornamen des Schülers ein (z.B. "Max M."). Der Schüler wird sofort 
-                  zur Liste hinzugefügt und automatisch ausgewählt.
+                  Klicken Sie auf den blauen "Schueler hinzufuegen" Button in der linken Seitenleiste. 
+                  Geben Sie den Vornamen des Schuelers ein (z.B. "Max M."). Der Schueler wird sofort 
+                  zur Liste hinzugefuegt und automatisch ausgewaehlt.
                 </p>
               </div>
 
               <div>
                 <h4 className="text-lg font-medium text-slate-700 dark:text-gray-100 mb-2">
-                  2. Bewertungen durchführen
+                  2. Klassen verwalten
                 </h4>
                 <p className="text-slate-600 dark:text-gray-300">
-                  Wählen Sie einen Schüler aus der Liste aus. Sie sehen alle Fächer und deren 
-                  Kompetenzen. Klicken Sie auf die gewünschte Bewertung (0-4) für jede Kompetenz. 
-                  Sie können jederzeit neue Bewertungen hinzufügen - das System speichert alle 
+                  Der halbbreite Button "Klasse" ueber "Schueler hinzufuegen" oeffnet das Klassen-Modal. 
+                  Dort koennen Sie die aktuelle Schuelerliste als neue Klasse speichern, eine leere Klasse 
+                  anlegen oder zu bestehenden Klassen sowie "Ohne Zuordnung" wechseln.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="text-lg font-medium text-slate-700 dark:text-gray-100 mb-2">
+                  3. Bewertungen durchfuehren
+                </h4>
+                <p className="text-slate-600 dark:text-gray-300">
+                  Waehlen Sie einen Schueler aus der Liste aus. Sie sehen alle Faecher und deren 
+                  Kompetenzen. Klicken Sie auf die gewuenschte Bewertung (0-4) fuer jede Kompetenz. 
+                  Sie koennen jederzeit neue Bewertungen hinzufuegen - das System speichert alle 
                   Bewertungen mit Zeitstempel.
                 </p>
               </div>
 
               <div>
                 <h4 className="text-lg font-medium text-slate-700 dark:text-gray-100 mb-2">
-                  3. Bewertungshistorie einsehen
+                  4. Bewertungshistorie einsehen
                 </h4>
                 <p className="text-slate-600 dark:text-gray-300">
                   Klicken Sie auf die Zahl einer Bewertung, um die komplette Historie dieser 
-                  Kompetenz zu sehen. Sie können sehen, wann Sie welche Bewertung vergeben haben. 
-                  Dies hilft Ihnen, die Entwicklung des Schülers über das Schuljahr zu verfolgen.
+                  Kompetenz zu sehen. Sie koennen sehen, wann Sie welche Bewertung vergeben haben. 
+                  Dies hilft Ihnen, die Entwicklung des Schuelers ueber das Schuljahr zu verfolgen.
                 </p>
               </div>
 
               <div>
                 <h4 className="text-lg font-medium text-slate-700 dark:text-gray-100 mb-2">
-                  4. Einzelne Bewertungen löschen
+                  5. Einzelne Bewertungen loeschen
                 </h4>
                 <p className="text-slate-600 dark:text-gray-300">
-                  In der Bewertungshistorie können Sie einzelne Bewertungen wieder löschen. 
-                  Klicken Sie auf das X-Symbol neben der gewünschten Bewertung. Dies ist nützlich, 
+                  In der Bewertungshistorie koennen Sie einzelne Bewertungen wieder loeschen. 
+                  Klicken Sie auf das X-Symbol neben der gewuenschten Bewertung. Dies ist nuetzlich, 
                   wenn Sie versehentlich eine falsche Bewertung eingegeben haben.
                 </p>
               </div>
 
               <div>
                 <h4 className="text-lg font-medium text-slate-700 dark:text-gray-100 mb-2">
-                  5. PDF-Export am Schuljahresende
+                  6. PDF-Export am Schuljahresende
                 </h4>
                 <p className="text-slate-600 dark:text-gray-300">
-                  Am Ende des Schuljahres können Sie für jeden Schüler ein PDF-Zeugnis erstellen. 
-                  Das System wählt automatisch die am häufigsten vergebene Bewertung für jede 
+                  Am Ende des Schuljahres koennen Sie fuer jeden Schueler ein PDF-Zeugnis erstellen. 
+                  Das System waehlt automatisch die am haeufigsten vergebene Bewertung fuer jede 
                   Kompetenz aus. Klicken Sie auf "PDF Export" in der oberen Leiste, um das 
                   Zeugnis zu generieren.
                 </p>
@@ -90,28 +101,27 @@ const UsageModal: React.FC<UsageModalProps> = ({ isOpen, onClose }) => {
 
               <div>
                 <h4 className="text-lg font-medium text-slate-700 dark:text-gray-100 mb-2">
-                  6. Daten sichern und laden
+                  7. Daten sichern und laden
                 </h4>
                 <p className="text-slate-600 dark:text-gray-300">
-                  Ihre Daten werden automatisch im Browser gespeichert. Zusätzlich können Sie 
-                  mit "Speichern" eine JSON-Datei erstellen und mit "Laden" wieder einlesen. 
-                  Dies ist besonders wichtig für Backups oder den Wechsel zwischen verschiedenen 
-                  Geräten.
+                  Ihre Daten werden automatisch im Browser gespeichert. Sobald Klassen existieren, 
+                  waehlen Sie beim Speichern/Laden die gewuenschte Klasse, "Ohne Klasse" oder 
+                  "Alle Klassen" (Sammel-Format, ueberschreibt den kompletten LocalStorage). 
+                  Das ist besonders wichtig fuer Backups oder den Wechsel zwischen Geraeten.
                 </p>
               </div>
 
               <div>
                 <h4 className="text-lg font-medium text-slate-700 dark:text-gray-100 mb-2">
-                  7. Kompetenzen anpassen
+                  8. Kompetenzen anpassen
                 </h4>
                 <p className="text-slate-600 dark:text-gray-300">
-                  Sie können Kompetenztexte bearbeiten, indem Sie darauf klicken. Neue Kompetenzen 
-                  können über das Plus-Symbol in jeder Kategorie hinzugefügt werden. Kategorienamen 
-                  können ebenfalls angepasst werden.
+                  Sie koennen Kompetenztexte bearbeiten, indem Sie darauf klicken. Neue Kompetenzen 
+                  koennen ueber das Plus-Symbol in jeder Kategorie hinzugefuegt werden. Kategorienamen 
+                  koennen ebenfalls angepasst werden.
                 </p>
               </div>
             </div>
-
             <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <h4 className="text-lg font-medium text-blue-800 dark:text-blue-200 mb-2">
                 Wichtiger Hinweis

@@ -10,6 +10,7 @@ Der Bewertungs‑Assistent ist eine Single-Page-Application, die Lehrkräften hi
 ### Hauptfunktionen
 
 - **Schülerverwaltung**: Hinzufügen, Auswählen und Löschen von Schülern
+- **Klassenverwaltung**: Schuelerlisten Klassen zuordnen, Klassen anlegen/wechseln, Export/Import je Klasse oder als Sammel-JSON
 - **Kompetenzbasierte Bewertung**: Bewertung nach 5-stufiger Skala (nicht vermittelt, gering ausgeprägt, teilweise ausgeprägt, ausgeprägt, sehr ausgeprägt)
 - **Fächerübergreifend**: Unterstützung für Deutsch, Mathematik, Sachunterricht, Kunst, Musik und Sport
 - **Datenexport/-import**: Vollständiger Export/Import des Anwendungszustands als JSON
@@ -179,3 +180,11 @@ npm run test:ui   # Vitest UI
 ├── vite.config.ts
 └── vitest.config.ts
 ```
+
+## Klassenverwaltung (Speichern/Laden)
+
+- Button "Klasse" ueber "Schueler hinzufuegen" zum Anlegen/Wechseln von Klassen oder "Ohne Zuordnung"; Klassenname wird neben dem Button angezeigt.
+- LocalStorage speichert Klassen (`classes`), nicht zugeordnete Schueler (`unassignedStudents`) sowie die aktive Klasse.
+- Sobald Klassen existieren, wird "Speichern" zu einem Dropdown je Klasse, "Ohne Klasse" und "Alle Klassen". Einzel-Exports behalten das bisherige JSON-Format und setzen den Klassennamen (mit Unterstrichen) in den Dateinamen; "Alle Klassen" nutzt ein Sammel-JSON mit Klassenknoten.
+- "Laden" fragt per Dropdown nach dem Ziel (Klasse/Ohne Klasse/Alle Klassen). Beim Import eines Sammel-JSONs aus dem "Alle Klassen"-Format wird der gesamte LocalStorage ersetzt.
+- Aeltere JSON-Dateien ohne Klassen bleiben weiterhin importierbar und werden als "Ohne Zuordnung" uebernommen.

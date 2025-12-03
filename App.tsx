@@ -1,8 +1,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { initialSubjects } from './data/initialData';
-import type { Student, Subject, AppState, Rating, Category, Competency, RatingEntry, LegacyAssessments, ModernAssessments, AssessmentData } from './types';
-import { isLegacyFormat, migrateLegacyAssessments } from './types';
+import type { Student, Subject, AppState, Rating, Category, Competency, RatingEntry, ClassGroup } from './types';
 import { sanitizeStudent, validateAssessmentData, ValidationError, DataMigrationError } from './utils/validation';
 import StudentList from './components/StudentList';
 import AssessmentForm from './components/AssessmentForm';
@@ -11,23 +10,32 @@ import ThemeSelector from './components/ThemeSelector';
 import AboutModal from './components/AboutModal';
 import UpdateInfoModal from './components/UpdateInfoModal';
 import UsageModal from './components/UsageModal';
+import ClassModal from './components/ClassModal';
 import ErrorBoundary from './components/ErrorBoundary';
 import { generatePdf } from './services/pdfGenerator';
-import { useUpdateService, installPWA } from './services/updateService';
+import { useUpdateService } from './services/updateService';
 import { PlusIcon, ArrowDownTrayIcon, ArrowUpTrayIcon, DocumentArrowDownIcon } from './components/Icons';
 import { Analytics } from "@vercel/analytics/react";
 import packageJson from './package.json';
 
 const App: React.FC = () => {
-  const [students, setStudents] = useState<Student[]>([]);
+  const [classes, setClasses] = useState<ClassGroup[]>([]);
+  const [unassignedStudents, setUnassignedStudents] = useState<Student[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>(initialSubjects);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [activeClassId, setActiveClassId] = useState<string | null>(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [saveTarget, setSaveTarget] = useState<string>('');
+  const [importTarget, setImportTarget] = useState<string>('unassigned');
+  const [showClassModal, setShowClassModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [showUsageModal, setShowUsageModal] = useState(false);
   const [updateInfoStatus, setUpdateInfoStatus] = useState<'success' | 'fail' | 'unchanged'>('unchanged');
   const [updateBuildInfo, setUpdateBuildInfo] = useState<any>(null);
   const [isUpdateInfoModalOpen, setIsUpdateInfoModalOpen] = useState(false);
+
+  const STORAGE_KEY = 'zeugnis-assistent-state';
+  const DATA_VERSION = '3.0';
 
   // Enhanced migration function with comprehensive error handling
   const migrateStudentData = useCallback((student: any, index?: number): Student => {
@@ -60,56 +68,50 @@ const App: React.FC = () => {
     }
   }, []);
 
+  const sanitizeStudentList = useCallback((rawStudents: any[]): Student[] => {
+    if (!Array.isArray(rawStudents)) return [];
+    const migrationErrors: string[] = [];
+
+    const migratedStudents = rawStudents
+      .map((student: any, index: number) => {
+        try {
+          return migrateStudentData(student, index);
+        } catch (error) {
+          const errorMsg = `Student ${index}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+          migrationErrors.push(errorMsg);
+          console.error('Student migration error:', errorMsg, student);
+          return null;
+        }
+      })
+      .filter((student: Student | null): student is Student => student !== null);
+
+    if (migrationErrors.length > 0) {
+      console.warn('Student migration completed with errors:', migrationErrors);
+    }
+
+    return migratedStudents;
+  }, [migrateStudentData]);
+
 
   useEffect(() => {
     try {
-      const savedState = localStorage.getItem('zeugnis-assistent-state');
+      const savedState = localStorage.getItem(STORAGE_KEY);
       if (savedState) {
         let parsedState: any;
-        
+
         try {
           parsedState = JSON.parse(savedState);
         } catch (parseError) {
           console.error("JSON parsing error for saved state:", parseError);
           throw new ValidationError('Invalid JSON in localStorage');
         }
-        
-        // Validate basic structure
+
         if (!parsedState || typeof parsedState !== 'object') {
           throw new ValidationError('Invalid state structure in localStorage');
         }
-        
-        // Migrate students data with enhanced error handling
-        let migratedStudents: Student[] = [];
-        if (parsedState.students && Array.isArray(parsedState.students)) {
-          const migrationErrors: string[] = [];
-          
-          migratedStudents = parsedState.students
-            .map((student: any, index: number) => {
-              try {
-                return migrateStudentData(student, index);
-              } catch (error) {
-                const errorMsg = `Student ${index}: ${error instanceof Error ? error.message : 'Unknown error'}`;
-                migrationErrors.push(errorMsg);
-                console.error('Student migration error:', errorMsg, student);
-                return null;
-              }
-            })
-            .filter((student: Student | null): student is Student => student !== null);
-          
-          if (migrationErrors.length > 0) {
-            console.warn('Student migration completed with errors:', migrationErrors);
-            // Could show a user notification here if needed
-          }
-          
-          console.log(`Successfully migrated ${migratedStudents.length} students`);
-        }
-        
-        setStudents(migratedStudents);
-        
-        // Validate and set subjects
+
+        // Subjects
         if (parsedState.subjects && Array.isArray(parsedState.subjects)) {
-          // Basic validation for subjects structure
           const validSubjects = parsedState.subjects.filter((subject: any) => {
             return subject && 
                    typeof subject === 'object' && 
@@ -119,7 +121,7 @@ const App: React.FC = () => {
                    typeof subject.name === 'string' &&
                    Array.isArray(subject.categories);
           });
-          
+
           if (validSubjects.length > 0) {
             setSubjects(validSubjects);
           } else {
@@ -129,48 +131,196 @@ const App: React.FC = () => {
         } else {
           setSubjects(initialSubjects);
         }
-        
-        // Set selected student safely
-        if (migratedStudents.length > 0) {
-          setSelectedStudentId(migratedStudents[0].id);
+
+        const hasClassShape = parsedState.classes || parsedState.unassignedStudents || parsedState.activeClassId || parsedState.version === DATA_VERSION;
+
+        if (hasClassShape) {
+          const loadedClasses: ClassGroup[] = Array.isArray(parsedState.classes)
+            ? parsedState.classes.map((cls: any, index: number) => {
+                if (!cls || typeof cls !== 'object') return null;
+                const id = typeof cls.id === 'string' && cls.id.trim() ? cls.id.trim() : `class-${Date.now()}-${index}`;
+                const name = typeof cls.name === 'string' && cls.name.trim() ? cls.name.trim() : `Klasse ${index + 1}`;
+                const students = sanitizeStudentList(Array.isArray(cls.students) ? cls.students : []);
+                return { id, name, students };
+              }).filter((cls: ClassGroup | null): cls is ClassGroup => cls !== null)
+            : [];
+
+          const loadedUnassigned = sanitizeStudentList(Array.isArray(parsedState.unassignedStudents) ? parsedState.unassignedStudents : []);
+          const nextActiveClassId = loadedClasses.find(c => c.id === parsedState.activeClassId)?.id || loadedClasses[0]?.id || null;
+
+          setClasses(loadedClasses);
+          setUnassignedStudents(loadedUnassigned);
+          setActiveClassId(nextActiveClassId);
+
+          const initialStudents = nextActiveClassId
+            ? (loadedClasses.find(c => c.id === nextActiveClassId)?.students || [])
+            : loadedUnassigned;
+
+          if (initialStudents.length > 0) {
+            setSelectedStudentId(initialStudents[0].id);
+          }
+
+          setImportTarget(nextActiveClassId ? `class:${nextActiveClassId}` : 'unassigned');
+        } else if (parsedState.students && Array.isArray(parsedState.students)) {
+          const migratedStudents = sanitizeStudentList(parsedState.students);
+          setClasses([]);
+          setUnassignedStudents(migratedStudents);
+          setActiveClassId(null);
+          setSelectedStudentId(migratedStudents[0]?.id || null);
+          setImportTarget('unassigned');
         }
       }
     } catch (error) {
       console.error("Fehler beim Laden der Daten aus dem LocalStorage:", error);
-      
-      // Show user-friendly error message
+
       const errorMessage = error instanceof ValidationError 
         ? `Datenvalidierungsfehler: ${error.message}`
         : 'Unbekannter Fehler beim Laden der Daten';
-      
-      // Could show a toast notification here
+
       console.warn('Resetting to initial state due to error:', errorMessage);
-      
-      // Reset to safe initial state
-      setStudents([]);
+
+      setClasses([]);
+      setUnassignedStudents([]);
       setSubjects(initialSubjects);
       setSelectedStudentId(null);
-      
-      // Clear corrupted localStorage data
+
       try {
-        localStorage.removeItem('zeugnis-assistent-state');
+        localStorage.removeItem(STORAGE_KEY);
       } catch (clearError) {
         console.error('Failed to clear corrupted localStorage:', clearError);
       }
     }
     setIsDataLoaded(true);
-  }, [migrateStudentData]);
+  }, [migrateStudentData, sanitizeStudentList]);
 
   useEffect(() => {
     if (isDataLoaded) {
       try {
-        const stateToSave: AppState = { students, subjects };
-        localStorage.setItem('zeugnis-assistent-state', JSON.stringify(stateToSave));
+        const stateToSave: AppState = { 
+          version: DATA_VERSION,
+          subjects, 
+          classes, 
+          unassignedStudents,
+          activeClassId
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
       } catch (error) {
         console.error("Fehler beim Speichern der Daten im LocalStorage:", error);
       }
     }
-  }, [students, subjects, isDataLoaded]);
+  }, [classes, unassignedStudents, subjects, activeClassId, isDataLoaded]);
+
+  const hasClasses = classes.length > 0;
+
+  const getActiveClass = useCallback(() => {
+    return classes.find(c => c.id === activeClassId) || null;
+  }, [classes, activeClassId]);
+
+  const activeStudents = useMemo(() => {
+    const activeClass = getActiveClass();
+    if (activeClass) {
+      return activeClass.students || [];
+    }
+    return unassignedStudents;
+  }, [getActiveClass, unassignedStudents]);
+
+  const setActiveStudents = useCallback((updater: (students: Student[]) => Student[]) => {
+    if (activeClassId) {
+      const classExists = classes.some(c => c.id === activeClassId);
+      if (classExists) {
+        setClasses(prev => prev.map(cls => cls.id === activeClassId ? { ...cls, students: updater(cls.students || []) } : cls));
+        return;
+      }
+      // Fallback: class missing, write to unassigned
+      setActiveClassId(null);
+    }
+    setUnassignedStudents(prev => updater(prev));
+  }, [activeClassId, classes]);
+
+  useEffect(() => {
+    if (selectedStudentId && activeStudents.some(s => s.id === selectedStudentId)) {
+      return;
+    }
+    setSelectedStudentId(activeStudents[0]?.id || null);
+  }, [activeStudents, selectedStudentId]);
+
+  useEffect(() => {
+    setImportTarget(activeClassId ? `class:${activeClassId}` : 'unassigned');
+  }, [activeClassId]);
+
+  const getClassLabel = () => {
+    if (activeClassId) {
+      const cls = getActiveClass();
+      return cls?.name || 'Klasse';
+    }
+    return 'Ohne Zuordnung';
+  };
+
+  const isDuplicateClassName = useCallback((name: string) => {
+    const trimmed = name.trim().toLowerCase();
+    return classes.some(cls => cls.name.trim().toLowerCase() === trimmed);
+  }, [classes]);
+
+  const handleSwitchClass = (classId: string | null) => {
+    const targetId = classId && classes.some(c => c.id === classId) ? classId : null;
+    setActiveClassId(targetId);
+    const nextStudents = targetId ? (classes.find(c => c.id === targetId)?.students || []) : unassignedStudents;
+    setSelectedStudentId(nextStudents[0]?.id || null);
+  };
+
+  const handleCreateClassFromCurrent = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      alert("Bitte geben Sie einen Klassennamen ein.");
+      return false;
+    }
+    if (isDuplicateClassName(trimmed)) {
+      alert("Dieser Klassenname existiert bereits.");
+      return false;
+    }
+
+    const newClass: ClassGroup = {
+      id: `class-${Date.now()}`,
+      name: trimmed,
+      students: activeStudents,
+    };
+
+    setClasses(prev => {
+      const cleared = activeClassId ? prev.map(c => c.id === activeClassId ? { ...c, students: [] } : c) : prev;
+      return [...cleared, newClass];
+    });
+
+    if (!activeClassId) {
+      setUnassignedStudents([]);
+    }
+
+    setActiveClassId(newClass.id);
+    setSelectedStudentId(newClass.students[0]?.id || null);
+    return true;
+  };
+
+  const handleCreateEmptyClass = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      alert("Bitte geben Sie einen Klassennamen ein.");
+      return false;
+    }
+    if (isDuplicateClassName(trimmed)) {
+      alert("Dieser Klassenname existiert bereits.");
+      return false;
+    }
+
+    const newClass: ClassGroup = {
+      id: `class-${Date.now()}`,
+      name: trimmed,
+      students: [],
+    };
+
+    setClasses(prev => [...prev, newClass]);
+    setActiveClassId(newClass.id);
+    setSelectedStudentId(null);
+    return true;
+  };
 
 
 
@@ -182,19 +332,14 @@ const App: React.FC = () => {
         name,
         assessments: {},
       };
-      const newStudents = [...students, newStudent];
-      setStudents(newStudents);
+      setActiveStudents(prev => [...prev, newStudent]);
       setSelectedStudentId(newStudent.id);
     }
   };
 
   const deleteStudent = (studentId: string) => {
     if (window.confirm("Möchten Sie diesen Schüler wirklich löschen? Alle Bewertungen gehen verloren.")) {
-      const updatedStudents = students.filter(s => s.id !== studentId);
-      setStudents(updatedStudents);
-      if (selectedStudentId === studentId) {
-        setSelectedStudentId(updatedStudents.length > 0 ? updatedStudents[0].id : null);
-      }
+      setActiveStudents(prev => prev.filter(s => s.id !== studentId));
     }
   };
 
@@ -219,7 +364,7 @@ const App: React.FC = () => {
         timestamp: Date.now()
       };
 
-      setStudents(prevStudents =>
+      setActiveStudents(prevStudents =>
         prevStudents.map(student => {
           if (student.id !== selectedStudentId) return student;
           
@@ -274,7 +419,7 @@ const App: React.FC = () => {
         throw new ValidationError('Invalid timestamp');
       }
 
-      setStudents(prevStudents =>
+      setActiveStudents(prevStudents =>
         prevStudents.map(student => {
           if (student.id !== selectedStudentId) return student;
           
@@ -360,58 +505,182 @@ const App: React.FC = () => {
     }
   };
 
-  const handleExportJson = () => {
-    try {
-      const state: AppState = { students, subjects };
-      
-      // Validate that we have data to export
-      if (!students || students.length === 0) {
-        alert("Keine Schülerdaten zum Exportieren vorhanden.");
-        return;
-      }
-      
-      // Create JSON with metadata for version tracking
-      const exportData = {
-        version: "2.0", // Version to track data format
-        exportDate: new Date().toISOString(),
-        ...state
-      };
-      
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
-      const downloadAnchorNode = document.createElement('a');
-      downloadAnchorNode.setAttribute("href", dataStr);
-      
-      // Erstelle Dateiname mit "BewertungSaph" und aktuellem Datum/Uhrzeit
-      const now = new Date();
-      const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
-      const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-MM-SS
-      downloadAnchorNode.setAttribute("download", `BewertungSaph_${dateStr}_${timeStr}.json`);
-      
-      document.body.appendChild(downloadAnchorNode);
-      downloadAnchorNode.click();
-      downloadAnchorNode.remove();
-      
-      console.log("JSON export successful:", exportData);
-    } catch (error) {
-      console.error("Fehler beim JSON-Export:", error);
-      alert("Fehler beim Exportieren der Daten. Bitte versuchen Sie es erneut.");
+  const sanitizeFilenameSegment = (input: string) => {
+    const safe = input.trim().replace(/\s+/g, '_').replace(/[^A-Za-z0-9_-]/g, '_');
+    return safe || 'Ohne_Klasse';
+  };
+
+  const buildFilename = (suffix: string) => {
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+    return `BewertungSaph_${suffix}_${dateStr}_${timeStr}.json`;
+  };
+
+  const downloadJson = (data: any, filename: string) => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", filename);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
+
+  const exportStudentsList = (studentsToExport: Student[], label: string) => {
+    if (!studentsToExport || studentsToExport.length === 0) {
+      alert("Keine Schülerdaten zum Exportieren vorhanden.");
+      return;
     }
+
+    const exportData = {
+      version: "2.0",
+      exportDate: new Date().toISOString(),
+      students: studentsToExport,
+      subjects
+    };
+
+    downloadJson(exportData, buildFilename(sanitizeFilenameSegment(label)));
+    console.log("JSON export successful:", exportData);
+  };
+
+  const exportAllClasses = () => {
+    const exportData = {
+      version: DATA_VERSION,
+      exportDate: new Date().toISOString(),
+      subjects,
+      classes,
+      unassignedStudents,
+      activeClassId
+    };
+
+    downloadJson(exportData, buildFilename("Alle_Klassen"));
+    console.log("JSON export (all classes) successful:", exportData);
+  };
+
+  const handleExportCurrentJson = () => {
+    const label = hasClasses ? getClassLabel() : 'Ohne Klasse';
+    exportStudentsList(activeStudents, label);
+  };
+
+  const handleExportSelection = (target: string) => {
+    setSaveTarget(target);
+    if (!target) return;
+
+    if (target === 'all') {
+      exportAllClasses();
+      setSaveTarget('');
+      return;
+    }
+
+    if (target === 'unassigned') {
+      exportStudentsList(unassignedStudents, 'Ohne Klasse');
+      setSaveTarget('');
+      return;
+    }
+
+    if (target.startsWith('class:')) {
+      const classId = target.split(':')[1];
+      const targetClass = classes.find(c => c.id === classId);
+      if (!targetClass) {
+        alert("Klasse nicht gefunden.");
+      } else {
+        exportStudentsList(targetClass.students, targetClass.name);
+      }
+      setSaveTarget('');
+      return;
+    }
+    setSaveTarget('');
+  };
+
+  const applyImportedSubjects = (incomingSubjects: any) => {
+    if (incomingSubjects && Array.isArray(incomingSubjects)) {
+      const validSubjects = incomingSubjects.filter((subject: any) => {
+        return subject && 
+               typeof subject === 'object' && 
+               subject.id && 
+               typeof subject.id === 'string' &&
+               subject.name && 
+               typeof subject.name === 'string' &&
+               Array.isArray(subject.categories);
+      });
+
+      if (validSubjects.length > 0) {
+        setSubjects(validSubjects);
+        return validSubjects;
+      }
+    }
+
+    throw new Error("Ungültige Datenstruktur: 'subjects' Array fehlt oder ist ungültig.");
+  };
+
+  const applyMultiClassImport = (data: any) => {
+    const loadedClasses: ClassGroup[] = Array.isArray(data.classes)
+      ? data.classes.map((cls: any, index: number) => {
+          if (!cls || typeof cls !== 'object') return null;
+          const id = typeof cls.id === 'string' && cls.id.trim() ? cls.id.trim() : `class-${Date.now()}-${index}`;
+          const name = typeof cls.name === 'string' && cls.name.trim() ? cls.name.trim() : `Klasse ${index + 1}`;
+          const students = sanitizeStudentList(Array.isArray(cls.students) ? cls.students : []);
+          return { id, name, students };
+        }).filter((cls: ClassGroup | null): cls is ClassGroup => cls !== null)
+      : [];
+
+    const loadedUnassigned = sanitizeStudentList(Array.isArray(data.unassignedStudents) ? data.unassignedStudents : []);
+    const nextActive = loadedClasses.find(c => c.id === data.activeClassId)?.id || loadedClasses[0]?.id || null;
+
+    setClasses(loadedClasses);
+    setUnassignedStudents(loadedUnassigned);
+    setActiveClassId(nextActive);
+
+    const nextStudents = nextActive
+      ? (loadedClasses.find(c => c.id === nextActive)?.students || [])
+      : loadedUnassigned;
+
+    setSelectedStudentId(nextStudents[0]?.id || null);
+    setImportTarget(nextActive ? `class:${nextActive}` : 'unassigned');
+  };
+
+  const applySingleImport = (studentsData: any[], target: string) => {
+    const migratedStudents = sanitizeStudentList(studentsData);
+
+    if (target === 'unassigned') {
+      setUnassignedStudents(migratedStudents);
+      setActiveClassId(null);
+    } else if (target.startsWith('class:')) {
+      const classId = target.split(':')[1];
+      const targetClass = classes.find(c => c.id === classId);
+      const className = targetClass?.name || 'Klasse';
+
+      setClasses(prev => {
+        const found = prev.some(c => c.id === classId);
+        if (found) {
+          return prev.map(c => c.id === classId ? { ...c, students: migratedStudents } : c);
+        }
+        return [...prev, { id: classId, name: className, students: migratedStudents }];
+      });
+      setActiveClassId(classId);
+    } else {
+      setUnassignedStudents(migratedStudents);
+      setActiveClassId(null);
+    }
+
+    setSelectedStudentId(migratedStudents[0]?.id || null);
+    setImportTarget(target);
   };
 
   const handleImportJson = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const targetSelection = hasClasses ? importTarget : 'unassigned';
     const fileReader = new FileReader();
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
       
-      // Validate file type
       if (!file.name.toLowerCase().endsWith('.json')) {
-        alert("Bitte wählen Sie eine gültige JSON-Datei aus.");
+        alert("Bitte waehlen Sie eine gueltige JSON-Datei aus.");
         return;
       }
       
-      // Validate file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
-        alert("Die Datei ist zu groß. Maximale Dateigröße: 10MB.");
+        alert("Die Datei ist zu gross. Maximale Dateigroesse: 10MB.");
         return;
       }
       
@@ -420,73 +689,53 @@ const App: React.FC = () => {
         if (e.target?.result) {
           try {
             const importedData: any = JSON.parse(e.target.result as string);
-            
-            // Handle both new format (with version) and legacy format
-            let newState: any;
-            if (importedData.version) {
-              // New format with metadata
-              console.log(`Importing data version: ${importedData.version}`);
-              newState = {
-                students: importedData.students,
-                subjects: importedData.subjects
-              };
-            } else {
-              // Legacy format or direct AppState
-              newState = importedData;
+            const fileHasClassStructure = Array.isArray(importedData.classes) || Array.isArray(importedData.unassignedStudents);
+            const targetIsAll = targetSelection === 'all';
+            const targetIsClass = targetSelection.startsWith('class:');
+
+            applyImportedSubjects(importedData.subjects);
+
+            if (fileHasClassStructure) {
+              if (!targetIsAll) {
+                const confirmAll = window.confirm(`Sie haben '${targetIsClass ? 'eine Klasse' : 'Ohne Klasse'}' als Ziel gewählt, die Datei enthält jedoch alle Klassen. Soll der komplette LocalStorage überschrieben werden?`);
+                if (!confirmAll) {
+                  return;
+                }
+              }
+
+              applyMultiClassImport(importedData);
+              alert("Daten aller Klassen erfolgreich importiert.");
+              return;
             }
-            
-            // Validate required fields
+
+            const newState = importedData;
+
             if (!newState.students || !Array.isArray(newState.students)) {
               throw new Error("Ungültige Datenstruktur: 'students' Array fehlt oder ist ungültig.");
             }
             
-            if (!newState.subjects || !Array.isArray(newState.subjects)) {
-              throw new Error("Ungültige Datenstruktur: 'subjects' Array fehlt oder ist ungültig.");
+            if (targetIsAll) {
+              setClasses([]);
+              setActiveClassId(null);
             }
+
+            const finalTarget = targetIsAll ? 'unassigned' : (targetSelection || 'unassigned');
+            applySingleImport(newState.students, finalTarget);
             
-            // Migrate imported students data if necessary
-            const migratedStudents = newState.students.map((student: any, index: number) => {
-              try {
-                return migrateStudentData(student);
-              } catch (migrationError) {
-                console.warn(`Migration warning for student ${index}:`, migrationError);
-                // Return a fallback student if migration fails
-                return {
-                  id: student.id || `student-${Date.now()}-${index}`,
-                  name: student.name || `Schüler ${index + 1}`,
-                  assessments: {}
-                };
-              }
-            });
-            
-            // Validate subjects structure
-            const validatedSubjects = newState.subjects.filter((subject: any) => {
-              return subject && subject.id && subject.name && Array.isArray(subject.categories);
-            });
-            
-            if (validatedSubjects.length === 0) {
-              throw new Error("Keine gültigen Fächer in den importierten Daten gefunden.");
-            }
-            
-            // Apply imported data
-            setStudents(migratedStudents);
-            setSubjects(validatedSubjects);
-            setSelectedStudentId(migratedStudents[0]?.id || null);
-            
-            // Show success message with details
-            const studentCount = migratedStudents.length;
-            const subjectCount = validatedSubjects.length;
-            alert(`Daten erfolgreich importiert!\n${studentCount} Schüler und ${subjectCount} Fächer wurden geladen.`);
+            const studentCount = newState.students.length;
+            alert(`Daten erfolgreich importiert!
+${studentCount} Schüler wurden geladen.`);
             
             console.log("Import successful:", {
-              students: migratedStudents.length,
-              subjects: validatedSubjects.length,
+              students: newState.students.length,
               version: importedData.version || "legacy"
             });
             
           } catch(err) {
             const errorMessage = err instanceof Error ? err.message : "Unbekannter Fehler";
-            alert(`Fehler beim Importieren der Datei: ${errorMessage}\n\nStellen Sie sicher, dass es eine gültige JSON-Datei mit Zeugnis-Daten ist.`);
+            alert(`Fehler beim Importieren der Datei: ${errorMessage}
+
+Stellen Sie sicher, dass es eine gültige JSON-Datei mit Zeugnis-Daten ist.`);
             console.error("Import error:", err);
           }
         }
@@ -498,16 +747,15 @@ const App: React.FC = () => {
       };
     }
     
-    // Reset file input to allow importing the same file again
     event.target.value = '';
   };
 
   const handleExportPdf = () => {
-    const student = students.find(s => s.id === selectedStudentId);
+    const student = activeStudents.find(s => s.id === selectedStudentId);
     if(student) {
         generatePdf(student, subjects);
     } else {
-        alert("Bitte wählen Sie einen Schüler für den PDF-Export aus.");
+        alert("Bitte waehlen Sie einen Schueler fuer den PDF-Export aus.");
     }
   };
 
@@ -517,11 +765,6 @@ const App: React.FC = () => {
     setIsUpdateInfoModalOpen,
   });
 
-  const handleInstallApp = async () => {
-    const result = await installPWA();
-    alert(result);
-  };
-
   const handleAbout = () => {
     setShowAboutModal(true);
   };
@@ -530,7 +773,7 @@ const App: React.FC = () => {
     setShowUsageModal(true);
   };
 
-  const selectedStudent = useMemo(() => students.find(s => s.id === selectedStudentId), [students, selectedStudentId]);
+  const selectedStudent = useMemo(() => activeStudents.find(s => s.id === selectedStudentId), [activeStudents, selectedStudentId]);
 
   return (
     <ErrorBoundary>
@@ -542,7 +785,7 @@ const App: React.FC = () => {
           <div className="p-4 flex-grow overflow-y-auto">
             <ErrorBoundary>
               <StudentList
-                students={students}
+                students={activeStudents}
                 subjects={subjects}
                 selectedStudentId={selectedStudentId}
                 onSelectStudent={setSelectedStudentId}
@@ -550,7 +793,18 @@ const App: React.FC = () => {
               />
             </ErrorBoundary>
           </div>
-          <div className="p-4 border-t border-slate-200 dark:border-gray-700">
+          <div className="p-4 border-t border-slate-200 dark:border-gray-700 space-y-3">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setShowClassModal(true)}
+                className="w-1/2 flex items-center justify-center gap-2 bg-slate-200 text-slate-700 font-semibold py-2 px-3 rounded-lg hover:bg-slate-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+              >
+                Klasse
+              </button>
+              <span className="text-sm text-slate-600 dark:text-gray-300 font-medium" title="Aktive Klasse">
+                {getClassLabel()}
+              </span>
+            </div>
             <button
               onClick={addStudent}
               className="w-full flex items-center justify-center gap-2 bg-blue-500 dark:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
@@ -566,16 +820,55 @@ const App: React.FC = () => {
             <h2 className="text-xl font-semibold dark:text-gray-100">
               Bewertung für: <span className="text-blue-600 dark:text-blue-400">{selectedStudent?.name || "Kein Schüler ausgewählt"}</span>
             </h2>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center flex-wrap gap-2">
               <ThemeSelector />
               <div className="h-8 w-px bg-slate-300 dark:bg-gray-600"></div>
-              <button onClick={handleExportJson} className="flex items-center gap-2 bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600" title="Daten als JSON speichern">
+              {hasClasses ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-slate-600 dark:text-gray-300">Speichern:</span>
+                  <select
+                    value={saveTarget}
+                    onChange={(e) => handleExportSelection(e.target.value)}
+                    className="bg-slate-200 dark:bg-gray-700 text-slate-700 dark:text-gray-200 text-sm font-medium py-2 px-3 rounded-lg hover:bg-slate-300 dark:hover:bg-gray-600"
+                  >
+                    <option value="">Ziel waehlen</option>
+                    {classes.map(cls => (
+                      <option key={cls.id} value={`class:${cls.id}`}>Klasse {cls.name}</option>
+                    ))}
+                    <option value="unassigned">Ohne Klasse</option>
+                    <option value="all">Alle Klassen</option>
+                  </select>
+                </div>
+              ) : (
+                <button onClick={handleExportCurrentJson} className="flex items-center gap-2 bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600" title="Daten als JSON speichern">
                   <ArrowDownTrayIcon /> Speichern
-              </button>
-              <label className="flex items-center gap-2 bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors cursor-pointer dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600" title="Daten aus JSON laden">
+                </button>
+              )}
+              {hasClasses ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-slate-600 dark:text-gray-300">Laden nach:</span>
+                  <select
+                    value={importTarget}
+                    onChange={(e) => setImportTarget(e.target.value)}
+                    className="bg-slate-200 dark:bg-gray-700 text-slate-700 dark:text-gray-200 text-sm font-medium py-2 px-3 rounded-lg hover:bg-slate-300 dark:hover:bg-gray-600"
+                  >
+                    <option value="unassigned">Ohne Klasse</option>
+                    {classes.map(cls => (
+                      <option key={cls.id} value={`class:${cls.id}`}>Klasse {cls.name}</option>
+                    ))}
+                    <option value="all">Alle Klassen</option>
+                  </select>
+                  <label className="flex items-center gap-2 bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors cursor-pointer dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600" title="Daten aus JSON laden">
+                    <ArrowUpTrayIcon /> Laden
+                    <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
+                  </label>
+                </div>
+              ) : (
+                <label className="flex items-center gap-2 bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors cursor-pointer dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600" title="Daten aus JSON laden">
                   <ArrowUpTrayIcon /> Laden
                   <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
-              </label>
+                </label>
+              )}
               <button 
                 onClick={handleExportPdf} 
                 disabled={!selectedStudent}
@@ -634,6 +927,18 @@ const App: React.FC = () => {
           </div>
         </main>
         
+        <ErrorBoundary>
+          <ClassModal
+            isOpen={showClassModal}
+            onClose={() => setShowClassModal(false)}
+            classes={classes}
+            activeClassId={activeClassId}
+            onCreateFromCurrent={handleCreateClassFromCurrent}
+            onCreateEmpty={handleCreateEmptyClass}
+            onSwitchClass={handleSwitchClass}
+          />
+        </ErrorBoundary>
+
         <ErrorBoundary>
           <AboutModal 
             isOpen={showAboutModal}

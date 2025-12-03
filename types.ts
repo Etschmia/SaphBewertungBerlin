@@ -35,9 +35,19 @@ export interface Student {
   assessments: Record<string, RatingEntry[]>; // key: competency.id -> array of RatingEntry
 }
 
+export interface ClassGroup {
+  id: string;
+  name: string;
+  students: Student[];
+}
+
 export interface AppState {
-    students: Student[];
+    students?: Student[];
     subjects: Subject[];
+    classes?: ClassGroup[];
+    unassignedStudents?: Student[];
+    activeClassId?: string | null;
+    version?: string;
 }
 
 // Legacy types for backward compatibility
