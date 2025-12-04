@@ -32,12 +32,19 @@ export interface RatingEntry {
 export interface Student {
   id: string;
   name: string;
+  classId?: string; // Optional reference to a class
   assessments: Record<string, RatingEntry[]>; // key: competency.id -> array of RatingEntry
+}
+
+export interface Class {
+  id: string;
+  name: string;
 }
 
 export interface AppState {
     students: Student[];
     subjects: Subject[];
+    classes?: Class[]; // Optional for backward compatibility
 }
 
 // Legacy types for backward compatibility
