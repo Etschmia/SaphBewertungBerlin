@@ -334,11 +334,20 @@ const AppContent: React.FC = () => {
       if (format === 'multi-class') {
         // Import all classes (Requirements 6.4)
         classManager.importAllClasses(fileData as AllClassesExport);
-        
+
         // Refresh the context state
         const allClasses = classManager.getAllClasses();
         const studentCount = allClasses.reduce((sum, c) => sum + c.students.length, 0);
-        alert(`Alle Klassen erfolgreich importiert!\n${allClasses.length} Klassen mit insgesamt ${studentCount} Schülern wurden geladen.`);
+
+        // Switch to the class with the most students so the user sees their data immediately
+        if (allClasses.length > 0) {
+          const largestClass = allClasses.reduce((largest, current) =>
+            current.students.length > largest.students.length ? current : largest
+          );
+          classManager.switchToClass(largestClass.id);
+        }
+
+        alert(`Alle Klassen erfolgreich importiert!\n${allClasses.length} Klasse${allClasses.length !== 1 ? 'n' : ''} mit insgesamt ${studentCount} Schüler${studentCount !== 1 ? 'n' : ''} wurden geladen.`);
       } else {
         // Import legacy format to specific class (Requirements 5.6, 5.7, 7.2)
         const appState = fileData as AppState;
@@ -473,6 +482,7 @@ const AppContent: React.FC = () => {
               {/* LoadDropdown replaces handleImportJson - Requirements 5.1 */}
               <LoadDropdown
                 classes={classes}
+                hasExistingData={classes.length > 0 || students.length > 0}
                 onLoadToClass={handleLoadToClass}
               />
               <button 

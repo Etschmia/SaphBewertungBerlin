@@ -133,9 +133,10 @@ const UsageModal: React.FC<UsageModalProps> = ({ isOpen, onClose }) => {
                     um sämtliche Klassen und Schüler in einer Datei zu sichern.
                   </li>
                   <li>
-                    <strong>Daten laden:</strong> Beim Laden können Sie wählen, in welche Klasse 
-                    die Daten importiert werden sollen. Alte JSON-Dateien ohne Klasseninformationen 
-                    werden weiterhin unterstützt.
+                    <strong>Daten laden:</strong> Daten werden immer in die aktuell ausgewählte
+                    Klasse importiert. Enthält Ihre Datei mehrere Klassen, werden alle Klassen
+                    übernommen und Sie landen automatisch in der größten Klasse. Ältere
+                    JSON-Dateien ohne Klasseninformationen werden weiterhin unterstützt.
                   </li>
                 </ul>
               </div>

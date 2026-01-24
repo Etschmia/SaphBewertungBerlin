@@ -16,6 +16,7 @@ import { useClickOutside } from '../hooks/useClickOutside';
 
 export interface LoadDropdownProps {
   classes: ClassData[];
+  hasExistingData: boolean; // true if there are classes or unassigned students in storage
   onLoadToClass: (
     classId: string | 'unassigned' | 'all',
     fileData: unknown,
@@ -36,6 +37,7 @@ export interface LoadDropdownProps {
  */
 const LoadDropdown: React.FC<LoadDropdownProps> = ({
   classes,
+  hasExistingData,
   onLoadToClass,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -83,22 +85,25 @@ const LoadDropdown: React.FC<LoadDropdownProps> = ({
       // Check for format mismatch (Requirements 6.1, 6.2)
       // Multi-class file being loaded into single class or unassigned
       if (format === 'multi-class' && selectedTarget !== 'all') {
-        const targetClassName = selectedTarget === 'unassigned'
-          ? undefined
-          : classes.find(c => c.id === selectedTarget)?.name;
+        // Only show warning if there's existing data that would be overwritten
+        if (hasExistingData) {
+          const targetClassName = selectedTarget === 'unassigned'
+            ? undefined
+            : classes.find(c => c.id === selectedTarget)?.name;
 
-        const confirmed = await showFormatMismatchWarning({
-          selectedTarget: selectedTarget === 'unassigned' ? 'unassigned' : selectedTarget,
-          targetClassName,
-          fileData: fileData as AllClassesExport,
-        });
+          const confirmed = await showFormatMismatchWarning({
+            selectedTarget: selectedTarget === 'unassigned' ? 'unassigned' : selectedTarget,
+            targetClassName,
+            fileData: fileData as AllClassesExport,
+          });
 
-        if (!confirmed) {
-          // User cancelled - don't change anything (Requirements 6.5)
-          return;
+          if (!confirmed) {
+            // User cancelled - don't change anything (Requirements 6.5)
+            return;
+          }
         }
 
-        // User confirmed - import all classes (Requirements 6.4)
+        // Import all classes (Requirements 6.4)
         onLoadToClass('all', fileData, 'multi-class');
       } else {
         // Normal import - legacy to class/unassigned, or multi-class to all

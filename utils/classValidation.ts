@@ -83,12 +83,7 @@ export interface FormatMismatchWarningOptions {
  * @returns The warning message string
  */
 export function getFormatMismatchWarningMessage(options: FormatMismatchWarningOptions): string {
-  const { selectedTarget, targetClassName, fileData } = options;
-
-  // Determine the target name for display
-  const targetName = selectedTarget === 'unassigned'
-    ? 'Ohne Klasse'
-    : targetClassName || 'unbekannte Klasse';
+  const { fileData } = options;
 
   // Count classes in the file for informative message
   const classCount = fileData.classes?.length || 0;
@@ -102,11 +97,11 @@ export function getFormatMismatchWarningMessage(options: FormatMismatchWarningOp
   } else if (hasUnassigned) {
     fileDescription = 'Schüler ohne Zuordnung';
   } else {
-    fileDescription = 'alle Klassen';
+    fileDescription = 'mehrere Klassen';
   }
 
-  return `Sie haben "${targetName}" zum Laden ausgewählt, aber die Datei enthält Daten für ${fileDescription}.\n\n` +
-    `Wenn Sie fortfahren, wird Ihr gesamter LocalStorage überschrieben.\n\n` +
+  return `Die ausgewählte Datei enthält ${fileDescription}.\n\n` +
+    `Wenn Sie fortfahren, werden Ihre aktuellen Daten im Browser durch die Daten aus der Datei ersetzt.\n\n` +
     `Möchten Sie fortfahren?`;
 }
 
