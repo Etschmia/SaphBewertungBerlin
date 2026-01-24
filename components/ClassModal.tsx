@@ -197,7 +197,7 @@ const ClassModal: React.FC<ClassModalProps> = ({
                   transition-colors flex items-center gap-1 text-sm font-medium"
                 aria-label="Klasse aus aktueller Schülerliste erstellen"
               >
-                <PlusIcon className="w-4 h-4" />
+                <PlusIcon />
                 Erstellen
               </button>
             </div>
@@ -243,7 +243,7 @@ const ClassModal: React.FC<ClassModalProps> = ({
                   transition-colors flex items-center gap-1 text-sm font-medium"
                 aria-label="Leere Klasse erstellen"
               >
-                <PlusIcon className="w-4 h-4" />
+                <PlusIcon />
                 Erstellen
               </button>
             </div>

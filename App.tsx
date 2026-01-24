@@ -438,7 +438,7 @@ const AppContent: React.FC = () => {
               />
             </ErrorBoundary>
           </div>
-          <div className="p-4 border-t border-slate-200 dark:border-gray-700 space-y-2">
+          <div className="p-2 border-t border-slate-200 dark:border-gray-700 space-y-2">
             {/* ClassButton and "Schüler hinzufügen" in same row - Requirement 1.1, 1.4 */}
             <div className="flex gap-2">
               <ClassButton
@@ -447,10 +447,10 @@ const AppContent: React.FC = () => {
               />
               <button
                 onClick={addStudent}
-                className="flex-1 flex items-center justify-center gap-2 bg-blue-500 dark:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
+                className="flex-1 flex items-center justify-center gap-1 bg-blue-500 dark:bg-blue-600 text-white font-semibold py-2 px-1 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
               >
                 <PlusIcon />
-                Schüler hinzufügen
+                Schüler erfassen
               </button>
             </div>
           </div>
