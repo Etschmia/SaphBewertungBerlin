@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo, useCallback } from 'react';
 import { Rating, RatingEntry } from '../types';
 import { XIcon, TrashIcon } from './Icons';
+import { useClickOutside } from '../hooks/useClickOutside';
 
 interface RatingHistoryModalProps {
   isOpen: boolean;
@@ -20,34 +21,19 @@ const RatingHistoryModal: React.FC<RatingHistoryModalProps> = ({
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Handle click outside to close modal (Requirement 3.6)
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen, onClose]);
+  useClickOutside(modalRef, useCallback(() => onClose(), [onClose]), isOpen);
 
   // Handle escape key to close modal
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onClose();
       }
     };
 
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscapeKey);
-    }
-
+    document.addEventListener('keydown', handleEscapeKey);
     return () => {
       document.removeEventListener('keydown', handleEscapeKey);
     };

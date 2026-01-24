@@ -31,25 +31,6 @@ export const useUpdateService = ({
   };
 };
 
-// Fallback für einfache Verwendung ohne Hook
-export const checkForUpdates = async (): Promise<string> => {
-  try {
-    const result = await checkAndInstallUpdate();
-
-    switch (result.status) {
-      case 'success':
-        return 'Auf neue Version installiert';
-      case 'unchanged':
-        return 'Sie verwenden bereits die neueste Version';
-      case 'fail':
-      default:
-        return 'Server nicht erreichbar';
-    }
-  } catch (error) {
-    return 'Server nicht erreichbar';
-  }
-};
-
 export const installPWA = (): Promise<string> => {
   return new Promise((resolve) => {
     // Prüfe ob PWA-Installation möglich ist

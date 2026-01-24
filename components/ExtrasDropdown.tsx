@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { DotsVerticalIcon, RefreshIcon, InfoIcon, ChevronDownIcon, BookOpenIcon } from './Icons';
+import { useClickOutside } from '../hooks/useClickOutside';
 
 interface ExtrasDropdownProps {
   onUpdate: () => void;
@@ -11,18 +12,7 @@ const ExtrasDropdown: React.FC<ExtrasDropdownProps> = ({ onUpdate, onAbout, onUs
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  useClickOutside(dropdownRef, useCallback(() => setIsOpen(false), []));
 
   const handleMenuClick = (action: () => void) => {
     action();

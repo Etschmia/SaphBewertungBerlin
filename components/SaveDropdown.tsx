@@ -7,9 +7,10 @@
  * Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { ArrowDownTrayIcon, ChevronDownIcon } from './Icons';
 import type { ClassData } from '../types';
+import { useClickOutside } from '../hooks/useClickOutside';
 
 export interface SaveDropdownProps {
   classes: ClassData[];
@@ -19,12 +20,12 @@ export interface SaveDropdownProps {
 
 /**
  * SaveDropdown - Dropdown menu for saving class data.
- * 
+ *
  * When classes exist (Requirements 4.1):
  * - Shows dropdown with options for each class (Requirements 4.2)
  * - Shows "Ohne Klasse" option if unassigned students exist (Requirements 4.3)
  * - Shows "Alle Klassen" as last entry (Requirements 4.4)
- * 
+ *
  * When no classes exist:
  * - Shows a simple save button
  */
@@ -37,18 +38,7 @@ const SaveDropdown: React.FC<SaveDropdownProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  useClickOutside(dropdownRef, useCallback(() => setIsOpen(false), []));
 
   const handleMenuClick = (classId: string | 'unassigned' | 'all') => {
     onSaveClass(classId);

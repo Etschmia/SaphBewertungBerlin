@@ -113,28 +113,15 @@ export function getFormatMismatchWarningMessage(options: FormatMismatchWarningOp
 /**
  * Shows a format mismatch warning dialog using window.confirm.
  * Returns a promise that resolves to true if user confirms, false otherwise.
- * 
+ *
  * Requirements: 6.1, 6.2, 6.3
- * 
+ *
  * @param options - Warning options including target and file data
  * @returns Promise resolving to user's choice (true = confirm, false = cancel)
  */
 export function showFormatMismatchWarning(options: FormatMismatchWarningOptions): Promise<boolean> {
   const message = getFormatMismatchWarningMessage(options);
   return Promise.resolve(window.confirm(message));
-}
-
-/**
- * Synchronous version of showFormatMismatchWarning for simpler use cases.
- * 
- * Requirements: 6.1, 6.2, 6.3
- * 
- * @param options - Warning options including target and file data
- * @returns User's choice (true = confirm, false = cancel)
- */
-export function showFormatMismatchWarningSync(options: FormatMismatchWarningOptions): boolean {
-  const message = getFormatMismatchWarningMessage(options);
-  return window.confirm(message);
 }
 
 /**

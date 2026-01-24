@@ -1,12 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronDownIcon, SunIcon, MoonIcon } from './Icons';
+import { useClickOutside } from '../hooks/useClickOutside';
 
-interface ColorTheme {
-  id: string;
-  name: string;
-}
-
-interface CompleteTheme {
+interface Theme {
   id: string;
   name: string;
 }
@@ -17,46 +13,19 @@ interface ThemeState {
   completeTheme: string | null;
 }
 
-const colorThemes: ColorTheme[] = [
-  {
-    id: 'blue',
-    name: 'Blau'
-  },
-  {
-    id: 'emerald',
-    name: 'Smaragd'
-  },
-  {
-    id: 'purple',
-    name: 'Lila'
-  },
-  {
-    id: 'rose',
-    name: 'Rosa'
-  }
+const colorThemes: Theme[] = [
+  { id: 'blue', name: 'Blau' },
+  { id: 'emerald', name: 'Smaragd' },
+  { id: 'purple', name: 'Lila' },
+  { id: 'rose', name: 'Rosa' }
 ];
 
-const completeThemes: CompleteTheme[] = [
-  {
-    id: 'neon',
-    name: 'Neon'
-  },
-  {
-    id: 'sunset',
-    name: 'Sunset'
-  },
-  {
-    id: 'ocean',
-    name: 'Ocean'
-  },
-  {
-    id: 'forest',
-    name: 'Forest'
-  },
-  {
-    id: 'midnight',
-    name: 'Midnight'
-  }
+const completeThemes: Theme[] = [
+  { id: 'neon', name: 'Neon' },
+  { id: 'sunset', name: 'Sunset' },
+  { id: 'ocean', name: 'Ocean' },
+  { id: 'forest', name: 'Forest' },
+  { id: 'midnight', name: 'Midnight' }
 ];
 
 const ThemeSelector: React.FC = () => {
@@ -75,44 +44,27 @@ const ThemeSelector: React.FC = () => {
     const savedIsDark = localStorage.getItem('zeugnis-assistent-dark-mode');
     const savedColorTheme = localStorage.getItem('zeugnis-assistent-color-theme');
     const savedCompleteTheme = localStorage.getItem('zeugnis-assistent-complete-theme');
-    
+
     const initialState: ThemeState = {
       isDark: savedIsDark === 'true',
       colorTheme: savedColorTheme || 'blue',
       completeTheme: savedCompleteTheme || null
     };
-    
+
     setThemeState(initialState);
-    applyThemeWithoutEvent(initialState); // Don't trigger event on initial load
-  }, []); // Empty dependency array - only run once!
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (colorThemeRef.current && !colorThemeRef.current.contains(event.target as Node)) {
-        setIsColorThemeOpen(false);
-      }
-      if (completeThemeRef.current && !completeThemeRef.current.contains(event.target as Node)) {
-        setIsCompleteThemeOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    applyThemeWithoutEvent(initialState);
   }, []);
+
+  useClickOutside(colorThemeRef, useCallback(() => setIsColorThemeOpen(false), []));
+  useClickOutside(completeThemeRef, useCallback(() => setIsCompleteThemeOpen(false), []));
 
   const applyThemeWithoutEvent = (themeState: ThemeState) => {
     const html = document.documentElement;
     const body = document.body;
-    
-    console.log('Applying theme:', themeState);
-    console.log('Before - HTML classes:', html.className);
-    console.log('Before - Body classes:', body.className);
-    
+
     // Remove all existing theme classes
     html.classList.remove('dark', 'theme-emerald', 'theme-purple', 'theme-rose', 'theme-neon', 'theme-sunset', 'theme-ocean', 'theme-forest', 'theme-midnight');
-    
+
     if (themeState.completeTheme) {
       // Complete theme overrides everything
       html.classList.add(`theme-${themeState.completeTheme}`);
@@ -122,34 +74,25 @@ const ThemeSelector: React.FC = () => {
       } else {
         body.className = 'bg-slate-100 text-gray-900';
       }
-      console.log(`Applied complete theme: ${themeState.completeTheme}`);
     } else {
       // Standard color theme logic
       if (themeState.isDark) {
         html.classList.add('dark');
         body.className = 'bg-gray-900 text-white';
-        console.log('Applied dark mode');
       } else {
         html.classList.remove('dark');
         body.className = 'bg-slate-100 text-gray-900';
-        console.log('Applied light mode');
       }
-      
+
       // Add color theme class (except for default blue)
       if (themeState.colorTheme !== 'blue') {
         html.classList.add(`theme-${themeState.colorTheme}`);
-        console.log(`Applied theme-${themeState.colorTheme} class`);
       }
     }
-    
-    console.log('After - HTML classes:', html.className);
-    console.log('After - Body classes:', body.className);
   };
 
   const applyTheme = (themeState: ThemeState) => {
     applyThemeWithoutEvent(themeState);
-    // Force a re-render by triggering a custom event
-    console.log('Dispatching themeChanged event with theme:', themeState);
     window.dispatchEvent(new CustomEvent('themeChanged', { detail: themeState }));
   };
 

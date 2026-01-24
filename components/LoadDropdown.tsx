@@ -7,11 +7,12 @@
  * Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 6.1, 6.4, 6.5
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { ArrowUpTrayIcon, ChevronDownIcon } from './Icons';
 import type { ClassData, AllClassesExport } from '../types';
 import { detectFormat } from '../services/classManager';
 import { showFormatMismatchWarning } from '../utils/classValidation';
+import { useClickOutside } from '../hooks/useClickOutside';
 
 export interface LoadDropdownProps {
   classes: ClassData[];
@@ -24,12 +25,12 @@ export interface LoadDropdownProps {
 
 /**
  * LoadDropdown - Dropdown menu for loading class data.
- * 
+ *
  * When classes exist (Requirements 5.1):
  * - Shows dropdown with options for each class (Requirements 5.2)
  * - Shows "Ohne Klasse" option (Requirements 5.3)
  * - Shows "Alle Klassen" as last entry (Requirements 5.4)
- * 
+ *
  * When no classes exist:
  * - Shows a simple load button
  */
@@ -43,18 +44,7 @@ const LoadDropdown: React.FC<LoadDropdownProps> = ({
   const [selectedTarget, setSelectedTarget] = useState<string | 'unassigned' | 'all' | null>(null);
 
   // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  useClickOutside(dropdownRef, useCallback(() => setIsOpen(false), []));
 
 
   /**
