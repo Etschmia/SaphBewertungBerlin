@@ -25,13 +25,13 @@ const ClassModal: React.FC<ClassModalProps> = ({
   const [emptyName, setEmptyName] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  if (!isOpen) return null;
-
   useEffect(() => {
     if (isOpen) {
       setError(null);
     }
   }, [isOpen]);
+
+  if (!isOpen) return null;
 
   const handleCreateFromCurrent = () => {
     setError(null);
