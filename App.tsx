@@ -118,6 +118,15 @@ const AppContent: React.FC = () => {
     }
   };
 
+  const renameStudent = (studentId: string, newName: string) => {
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    const updatedStudents = students.map(s =>
+      s.id === studentId ? { ...s, name: trimmed } : s
+    );
+    updateStudents(updatedStudents);
+  };
+
   const handleAssessmentAdd = useCallback((competencyId: string, rating: Rating) => {
     if (!selectedStudentId) {
       console.warn('No student selected for assessment add');
@@ -444,6 +453,7 @@ const AppContent: React.FC = () => {
                 selectedStudentId={selectedStudentId}
                 onSelectStudent={setSelectedStudentId}
                 onDeleteStudent={deleteStudent}
+                onRenameStudent={renameStudent}
               />
             </ErrorBoundary>
           </div>
