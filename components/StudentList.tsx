@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { Student, Subject } from '../types';
 import { Rating } from '../types';
 import { TrashIcon } from './Icons';
@@ -10,6 +10,7 @@ interface StudentListProps {
   selectedStudentId: string | null;
   onSelectStudent: (id: string) => void;
   onDeleteStudent: (id: string) => void;
+  onRenameStudent: (id: string, newName: string) => void;
 }
 
 // Hilfsfunktion um den Bewertungsstand eines Fachs zu ermitteln
@@ -53,7 +54,42 @@ const AssessmentProgressBars: React.FC<{ student: Student; subjects: Subject[] }
   );
 };
 
-const StudentList: React.FC<StudentListProps> = ({ students, subjects, selectedStudentId, onSelectStudent, onDeleteStudent }) => {
+const StudentList: React.FC<StudentListProps> = ({ students, subjects, selectedStudentId, onSelectStudent, onDeleteStudent, onRenameStudent }) => {
+  const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editingStudentId && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editingStudentId]);
+
+  const handleStartEdit = (e: React.MouseEvent, student: Student) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setEditingStudentId(student.id);
+    setEditName(student.name);
+  };
+
+  const handleSaveEdit = (studentId: string) => {
+    const trimmed = editName.trim();
+    if (trimmed) {
+      onRenameStudent(studentId, trimmed);
+    }
+    setEditingStudentId(null);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, studentId: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSaveEdit(studentId);
+    } else if (e.key === 'Escape') {
+      setEditingStudentId(null);
+    }
+  };
+
   return (
     <div>
       <h3 className="text-lg font-semibold mb-3 text-slate-600 dark:text-gray-300">Schülerliste</h3>
@@ -70,7 +106,27 @@ const StudentList: React.FC<StudentListProps> = ({ students, subjects, selectedS
                   : 'bg-slate-50 dark:bg-gray-700 hover:bg-slate-200 dark:hover:bg-gray-600 text-slate-700 dark:text-gray-200'
                   }`}
               >
-                <span className="flex-1">{student.name}</span>
+                {editingStudentId === student.id ? (
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    onBlur={() => handleSaveEdit(student.id)}
+                    onKeyDown={(e) => handleKeyDown(e, student.id)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex-1 min-w-0 px-2 py-1 rounded border border-blue-300 dark:border-blue-600 bg-white dark:bg-gray-800 text-slate-800 dark:text-gray-200"
+                    title="Enter zum Speichern, Esc zum Abbrechen"
+                  />
+                ) : (
+                  <span
+                    className="flex-1 cursor-text hover:underline"
+                    onDoubleClick={(e) => handleStartEdit(e, student)}
+                    title="Doppelklick zum Bearbeiten"
+                  >
+                    {student.name}
+                  </span>
+                )}
                 <AssessmentProgressBars student={student} subjects={subjects} />
                 <button
                   onClick={(e) => {

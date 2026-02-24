@@ -10,7 +10,7 @@ Der Bewertungs‑Assistent ist eine Single-Page-Application, die Lehrkräften hi
 ### Hauptfunktionen
 
 - **Klassenverwaltung**: Organisation von Schülern in benannte Klassen mit einfachem Wechsel
-- **Schülerverwaltung**: Hinzufügen, Auswählen und Löschen von Schülern
+- **Schülerverwaltung**: Hinzufügen, Auswählen, Umbenennen (Doppelklick auf den Namen) und Löschen von Schülern
 - **Kompetenzbasierte Bewertung**: Bewertung nach 5-stufiger Skala (nicht vermittelt, gering ausgeprägt, teilweise ausgeprägt, ausgeprägt, sehr ausgeprägt)
 - **Fächerübergreifend**: Unterstützung für Deutsch, Mathematik, Sachunterricht, Kunst, Musik und Sport
 - **Datenexport/-import**: Vollständiger Export/Import des Anwendungszustands als JSON
@@ -153,7 +153,7 @@ npm run test:ui   # Vitest UI
 ### ✅ Vollständig implementiert
 - Grundlegende App-Struktur und Layout
 - **Klassenverwaltung** (Klassen anlegen, wechseln, klassenweiser Export/Import)
-- Schülerverwaltung (Hinzufügen, Auswählen, Löschen)
+- Schülerverwaltung (Hinzufügen, Auswählen, Umbenennen per Doppelklick, Löschen)
 - Kompetenzraster mit allen Fächern und Kategorien
 - Bewertungssystem mit 5-stufiger Skala
 - LocalStorage-Integration für Datenpersistierung

@@ -47,10 +47,11 @@ const UsageModal: React.FC<UsageModalProps> = ({ isOpen, onClose }) => {
                   2. Bewertungen durchführen
                 </h4>
                 <p className="text-slate-600 dark:text-gray-300">
-                  Wählen Sie einen Schüler aus der Liste aus. Sie sehen alle Fächer und deren 
-                  Kompetenzen. Klicken Sie auf die gewünschte Bewertung (0-4) für jede Kompetenz. 
-                  Sie können jederzeit neue Bewertungen hinzufügen - das System speichert alle 
-                  Bewertungen mit Zeitstempel.
+                  Wählen Sie einen Schüler aus der Liste aus (einfacher Klick). Ein Doppelklick auf 
+                  den Namen ermöglicht das Bearbeiten. Sie sehen alle Fächer und deren Kompetenzen. 
+                  Klicken Sie auf die gewünschte Bewertung (0-4) für jede Kompetenz. Sie können 
+                  jederzeit neue Bewertungen hinzufügen - das System speichert alle Bewertungen 
+                  mit Zeitstempel.
                 </p>
               </div>
 
